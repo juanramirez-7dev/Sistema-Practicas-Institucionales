@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Practicas.API/Practicas.API.csproj" />
+  <Project Path="Practicas.DataAccess/Practicas.DataAccess.csproj" />
+  <Project Path="Practicas.Domain/Practicas.Domain.csproj" />
+</Solution>
