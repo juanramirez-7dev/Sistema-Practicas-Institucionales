@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Practicas.DataAccess.Context;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +11,49 @@ builder.Services.AddDbContext<PracticasDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DbConnection")));
 
 // Authentication and Authorization
+builder.Services.AddAuthentication(
+    JwtBearerDefaults.AuthenticationScheme
+)
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters =
+        new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+
+            IssuerSigningKey =
+                new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(
+                        builder.Configuration["Jwt:Key"]!
+                    )
+                ),
+
+            ValidateIssuer = true,
+
+            ValidIssuer =
+                builder.Configuration["Jwt:Issuer"],
+
+            ValidateAudience = true,
+
+            ValidAudience =
+                builder.Configuration["Jwt:Audience"],
+
+            ValidateLifetime = true
+        };
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            context.Token =
+                context.Request.Cookies["access_token"];
+
+            return Task.CompletedTask;
+        }
+    };
+});
+builder.Services.AddAuthorization();
+
+// HttpClient
 
 // CORS
 
@@ -38,9 +84,8 @@ app.UseStaticFiles();
 
 // use CORS
 
-// use authentication
-
-app.UseAuthorization();
+// app.UseAuthentication();
+// app.UseAuthorization();
 
 app.MapControllers();
 
