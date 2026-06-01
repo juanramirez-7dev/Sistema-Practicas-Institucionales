@@ -108,7 +108,24 @@ namespace Practicas.Domain.Services
             {
                 throw new InvalidOperationException("El promedio académico debe estar entre 0 y 5.");
             }
+           
+            var carnetExistente =
+            await _estudianteRepository.GetByCarnetAsync(estudiante.Carnet);
 
+            if (carnetExistente != null)
+            {
+                throw new InvalidOperationException(
+                    "Ya existe un estudiante con ese carnet.");
+            }
+            var documentoExistente =
+             await _estudianteRepository.GetByDocumentoAsync(
+             estudiante.DocumentoIdentidad);
+
+            if (documentoExistente != null)
+            {
+                throw new InvalidOperationException(
+                    "Ya existe un estudiante con ese documento.");
+            }
             await _unitOfWork.BeginTransactionAsync();
 
             try
@@ -168,5 +185,15 @@ namespace Practicas.Domain.Services
             }
             await _estudianteRepository.DeleteAsync(id);
         }
+
+        public async Task<IEnumerable<Estudiante>> BuscarPerfilesAsync(
+        string? textoBusqueda,
+        string? carrera)
+        {
+            return await _estudianteRepository.BuscarPerfilesAsync(
+                textoBusqueda,
+                carrera);
+        }
+
     }
 }

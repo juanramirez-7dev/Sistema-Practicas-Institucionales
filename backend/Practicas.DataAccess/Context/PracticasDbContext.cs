@@ -51,6 +51,10 @@ namespace Practicas.DataAccess.Context
                       .WithOne(u => u.Estudiante)
                       .HasForeignKey<Estudiante>(e => e.UsuarioId)
                       .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.PerfilProfesional)
+                      .WithOne(p => p.Estudiante)
+                      .HasForeignKey<PerfilProfesional>(p => p.EstudianteId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<PerfilProfesional>(entity =>
@@ -66,6 +70,8 @@ namespace Practicas.DataAccess.Context
                       .HasForeignKey<PerfilProfesional>(p => p.EstudianteId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
+
+
         }
     }
 }

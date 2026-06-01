@@ -54,5 +54,29 @@ namespace Practicas.DataAccess.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<IEnumerable<Estudiante>> BuscarPerfilesAsync(string? textoBusqueda, string? carrera)
+
+        {
+            IQueryable<Estudiante> query = _context.Estudiantes
+                .Include(e => e.PerfilProfesional);
+
+            if (!string.IsNullOrWhiteSpace(textoBusqueda))
+            {
+                textoBusqueda = textoBusqueda.Trim();
+
+                query = query.Where(e =>
+                    e.Nombre.Contains(textoBusqueda) ||
+                    e.PerfilProfesional.Habilidades.Contains(textoBusqueda) ||
+                    e.PerfilProfesional.Tecnologias.Contains(textoBusqueda));
+            }
+
+            if (!string.IsNullOrWhiteSpace(carrera))
+            {
+                query = query.Where(e => e.Carrera == carrera);
+            }
+
+            return await query.ToListAsync();
+        }
     }
 }

@@ -34,5 +34,12 @@ namespace Practicas.DataAccess.Repositories
             _context.PerfilesProfesionales.Update(usuario);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<PerfilProfesional?> GetByEstudianteIdAsync(Guid estudianteId)
+        {
+            return await _context.PerfilesProfesionales
+                .FirstOrDefaultAsync(p => p.EstudianteId == estudianteId);
+        }
+
     }
 }
