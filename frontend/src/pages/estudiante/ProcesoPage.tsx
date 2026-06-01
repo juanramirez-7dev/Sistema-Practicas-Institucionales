@@ -11,7 +11,7 @@ import {
   ACCIONES_PENDIENTES,
   type ProcesoEstado,
   type EstadoProceso,
-} from '../../../lib/mockdata/estudiante.ts';
+} from '../../lib/mockdata/estudiante.ts';
 
 export function ProcesoPage() {
   const [selectedEstado, setSelectedEstado] = useState<ProcesoEstado | null>(null);

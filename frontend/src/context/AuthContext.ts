@@ -1,12 +1,12 @@
 import { createContext } from "react";
 
-import { type User } from '../lib/mockdata/users.ts';
+import type { User, Login } from "../types/authTypes";
 
 interface AuthContextType {
   user: User | null;
-  login: (user: User) => void;
-  logout: () => void;
-  isAuthenticated: boolean;
+  meLoading: boolean;
+  login: (credentials: Login) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | null>(null);

@@ -14,7 +14,7 @@ import {
   contarDocumentosPorEstado,
   type EstudianteOficina,
   type DocumentoOficina,
-} from '../../../lib/mockdata/oficina.ts';
+} from '../../lib/mockdata/oficina.ts';
 
 export function GestionEstudiantesPage() {
   const [estudiantes, setEstudiantes] = useState(ESTUDIANTES_OFICINA);

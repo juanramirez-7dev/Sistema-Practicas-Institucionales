@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router';
+import { Outlet, NavLink } from 'react-router';
 import {
   IconLogout,
   IconUser,
@@ -11,6 +11,7 @@ import {
   IconUsers,
   IconUserCheck,
 } from '@tabler/icons-react';
+
 import { useAuth } from '../hooks/useAuth';
 
 interface SidebarItem {
@@ -20,38 +21,32 @@ interface SidebarItem {
 }
 
 const ESTUDIANTE_MENU: SidebarItem[] = [
-  { path: '/dashboard/proceso', icon: IconRoute, label: 'Proceso' },
-  { path: '/dashboard/perfil', icon: IconUser, label: 'Perfil' },
-  { path: '/dashboard/empresas', icon: IconBriefcase, label: 'Empresas Interesadas' },
-  { path: '/dashboard/documentos', icon: IconFileText, label: 'Documentos' },
+  { path: '/estudiante/proceso', icon: IconRoute, label: 'Proceso' },
+  { path: '/estudiante/perfil', icon: IconUser, label: 'Perfil' },
+  { path: '/estudiante/empresas', icon: IconBriefcase, label: 'Empresas Interesadas' },
+  { path: '/estudiante/documentos', icon: IconFileText, label: 'Documentos' },
 ];
 
 const EMPRESA_MENU: SidebarItem[] = [
-  { path: '/dashboard/perfiles', icon: IconUsers, label: 'Perfiles' },
-  { path: '/dashboard/mi-seleccion', icon: IconUserCheck, label: 'Mi Selección' },
+  { path: '/empresa/perfiles', icon: IconUsers, label: 'Perfiles' },
+  { path: '/empresa/mi-seleccion', icon: IconUserCheck, label: 'Mi Selección' },
 ];
 
 const ASESOR_MENU: SidebarItem[] = [
-  { path: '/dashboard/gestion', icon: IconUsers, label: 'Gestión de Estudiantes' },
+  { path: '/asesor/gestion', icon: IconUsers, label: 'Gestión de Estudiantes' },
 ];
 
 const OFICINA_MENU: SidebarItem[] = [
-  { path: '/dashboard/gestion-estudiantes', icon: IconUsers, label: 'Gestión de Estudiantes' },
+  { path: '/oficina/gestion-estudiantes', icon: IconUsers, label: 'Gestión de Estudiantes' },
 ];
 
-interface DashboardLayoutProps {
-  children: React.ReactNode;
-}
 
-export function DashboardLayout({ children }: DashboardLayoutProps) {
+export function DashboardLayout() {
   const { user, logout } = useAuth();
-  const location = useLocation();
-  const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
   };
 
   const getMenuItems = (): SidebarItem[] => {
@@ -102,7 +97,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             className="p-3 rounded-xl"
             style={{ backgroundColor: 'var(--color-primary-light)' }}
           >
-            <p className="text-white font-bold text-sm">{user?.nombre}</p>
             <p className="text-white/70 text-xs capitalize">{user?.rol}</p>
           </div>
         </div>
@@ -111,22 +105,23 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <nav className="flex-1 p-4 space-y-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.path;
             return (
-              <Link
+              <NavLink
                 key={item.path}
                 to={item.path}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all"
-                style={{
-                  backgroundColor: isActive
-                    ? 'var(--color-secondary)'
-                    : 'transparent',
-                  color: 'white',
+                className={({ isActive })=> {
+                  const baseClasses = "flex items-center gap-3 px-4 py-3 rounded-xl transition-all" 
+                  if (isActive) {
+                    return baseClasses + " bg-secondary text-white";
+                  } else {
+                    return baseClasses + " bg-transparent text-white";
+                  }
                 }}
+        
               >
                 <Icon size={20} />
                 <span className="font-medium">{item.label}</span>
-              </Link>
+              </NavLink>
             );
           })}
         </nav>
@@ -182,7 +177,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 className="p-3 rounded-xl"
                 style={{ backgroundColor: 'var(--color-primary-light)' }}
               >
-                <p className="text-white font-bold text-sm">{user?.nombre}</p>
                 <p className="text-white/70 text-xs capitalize">{user?.rol}</p>
               </div>
             </div>
@@ -191,23 +185,22 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <nav className="flex-1 p-4 space-y-2">
               {menuItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = location.pathname === item.path;
                 return (
-                  <Link
+                  <NavLink
                     key={item.path}
                     to={item.path}
-                    onClick={() => setIsSidebarOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all"
-                    style={{
-                      backgroundColor: isActive
-                        ? 'var(--color-secondary)'
-                        : 'transparent',
-                      color: 'white',
+                    className={({ isActive })=> {
+                      const baseClasses = "flex items-center gap-3 px-4 py-3 rounded-xl transition-all" 
+                      if (isActive) {
+                        return baseClasses + " bg-secondary text-white";
+                      } else {
+                        return baseClasses + " bg-transparent text-white";
+                      }
                     }}
                   >
                     <Icon size={20} />
                     <span className="font-medium">{item.label}</span>
-                  </Link>
+                  </NavLink>
                 );
               })}
             </nav>
@@ -262,7 +255,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </header>
 
         {/* Contenido */}
-        <main className="flex-1 p-6 md:p-8">{children}</main>
+        <main className="flex-1 p-6 md:p-8">
+          <Outlet/>
+        </main>
       </div>
     </div>
   );

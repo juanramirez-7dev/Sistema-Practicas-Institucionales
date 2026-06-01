@@ -5,7 +5,7 @@ import {
   IconCalendar,
   IconInfoCircle,
 } from '@tabler/icons-react';
-import { EMPRESAS_INTERESADAS } from '../../../lib/mockdata/estudiante.ts';
+import { EMPRESAS_INTERESADAS } from '../../lib/mockdata/estudiante.ts';
 
 export function EmpresasPage() {
   const formatDate = (dateString: string) => {

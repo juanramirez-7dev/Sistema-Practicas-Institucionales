@@ -5,8 +5,8 @@ import {
   IconDownload,
   IconUserCheck,
 } from '@tabler/icons-react';
-import { getEstudiantesSeleccionados } from '../../../lib/mockdata/empresa.ts';
-import { useAuth } from '../../../hooks/useAuth.ts';
+import { getEstudiantesSeleccionados } from '../../lib/mockdata/empresa.ts';
+import { useAuth } from '../../hooks/useAuth.ts';
 
 export function MiSeleccionPage() {
   const { user } = useAuth();

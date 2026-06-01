@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link } from 'react-router';
 import {
   IconMail,
   IconLock,
@@ -8,20 +8,15 @@ import {
   IconEye,
   IconEyeOff,
 } from '@tabler/icons-react';
-import { authenticateUser, CREDENTIALS_EXAMPLES } from '../../../lib/mockdata/users.ts';
-import { useAuth } from '../../../hooks/useAuth.ts';
-
-type LoginError = 'invalid-email' | 'invalid-credentials' | 'inactive-user' | null;
+import { useAuth } from '../hooks/useAuth.ts';
 
 export function LoginPage() {
   const { login } = useAuth();
-  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<LoginError>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [showCredentials, setShowCredentials] = useState(false);
 
   const validateEmail = (email: string): boolean => {
     return email.toLowerCase().endsWith('@correo.itm.edu.co');
@@ -29,58 +24,26 @@ export function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setErrorMessage(null);
     setIsLoading(true);
 
-    // Validar formato de email
     if (!validateEmail(email)) {
-      setError('invalid-email');
+      setErrorMessage('El correo debe ser institucional (@correo.itm.edu.co)');
       setIsLoading(false);
       return;
     }
 
-    // Simular llamada al servidor
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    // Intentar autenticar
-    const user = authenticateUser(email, password);
-
-    if (!user) {
-      setError('invalid-credentials');
+    try {
+      await login({ login: email, password });
+    } catch (error) {
+      if (error instanceof Error && error.message) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage('No se pudo iniciar sesion. Intenta de nuevo.');
+      }
+    } finally {
       setIsLoading(false);
-      return;
     }
-
-    if (!user.activo) {
-      setError('inactive-user');
-      setIsLoading(false);
-      return;
-    }
-
-    // Login exitoso - guardar usuario y redirigir al dashboard
-    login(user);
-    navigate('/dashboard');
-    setIsLoading(false);
-  };
-
-  const getErrorMessage = (error: LoginError): string => {
-    switch (error) {
-      case 'invalid-email':
-        return 'El correo debe ser institucional (@correo.itm.edu.co)';
-      case 'invalid-credentials':
-        return 'Correo o contraseña incorrectos';
-      case 'inactive-user':
-        return 'Tu cuenta está inactiva. Contacta a la oficina de prácticas';
-      default:
-        return '';
-    }
-  };
-
-  const fillCredentials = (role: keyof typeof CREDENTIALS_EXAMPLES) => {
-    const creds = CREDENTIALS_EXAMPLES[role];
-    setEmail(creds.email);
-    setPassword(creds.password);
-    setError(null);
   };
 
   return (
@@ -130,13 +93,13 @@ export function LoginPage() {
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
-                    setError(null);
+                    setErrorMessage(null);
                   }}
                   placeholder="tucorreo@correo.itm.edu.co"
                   className="w-full px-4 py-3 pl-12 rounded-xl border-2 focus:outline-none focus:border-opacity-100 transition-colors"
                   style={{
                     backgroundColor: 'var(--color-gray-light)',
-                    borderColor: error ? 'var(--color-error)' : 'var(--color-border)',
+                    borderColor: errorMessage ? 'var(--color-error)' : 'var(--color-border)',
                   }}
                   required
                   autoComplete="email"
@@ -165,13 +128,13 @@ export function LoginPage() {
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
-                    setError(null);
+                    setErrorMessage(null);
                   }}
                   placeholder="Ingresa tu documento"
                   className="w-full px-4 py-3 pl-12 pr-12 rounded-xl border-2 focus:outline-none focus:border-opacity-100 transition-colors"
                   style={{
                     backgroundColor: 'var(--color-gray-light)',
-                    borderColor: error ? 'var(--color-error)' : 'var(--color-border)',
+                    borderColor: errorMessage ? 'var(--color-error)' : 'var(--color-border)',
                   }}
                   required
                   autoComplete="current-password"
@@ -193,13 +156,13 @@ export function LoginPage() {
             </div>
 
             {/* Error message */}
-            {error && (
+            {errorMessage && (
               <div
                 className="p-4 rounded-xl flex items-start gap-3"
                 style={{ backgroundColor: 'var(--color-error)', color: 'white' }}
               >
-                <IconAlertCircle size={20} className="flex-shrink-0 mt-0.5" />
-                <p className="text-sm">{getErrorMessage(error)}</p>
+                <IconAlertCircle size={20} className="shrink-0 mt-0.5" />
+                <p className="text-sm">{errorMessage}</p>
               </div>
             )}
 
@@ -224,51 +187,6 @@ export function LoginPage() {
             </button>
           </form>
 
-          {/* Credenciales de prueba */}
-          <div className="mt-6">
-            <button
-              onClick={() => setShowCredentials(!showCredentials)}
-              className="w-full text-sm text-center"
-              style={{ color: 'var(--color-gray-medium)' }}
-            >
-              {showCredentials ? '▼' : '►'} Ver credenciales de prueba
-            </button>
-
-            {showCredentials && (
-              <div
-                className="mt-4 p-4 rounded-xl space-y-3"
-                style={{ backgroundColor: 'var(--color-gray-light)' }}
-              >
-                <p
-                  className="text-sm font-bold mb-3"
-                  style={{ color: 'var(--color-text)' }}
-                >
-                  Haz clic para usar estas credenciales:
-                </p>
-                {Object.entries(CREDENTIALS_EXAMPLES).map(([role, creds]) => (
-                  <button
-                    key={role}
-                    onClick={() => fillCredentials(role as keyof typeof CREDENTIALS_EXAMPLES)}
-                    className="w-full p-3 rounded-lg text-left transition-all hover:scale-[1.02]"
-                    style={{ backgroundColor: 'var(--color-white)' }}
-                  >
-                    <p
-                      className="font-bold text-sm capitalize mb-1"
-                      style={{ color: 'var(--color-primary)' }}
-                    >
-                      {role}
-                    </p>
-                    <p
-                      className="text-xs"
-                      style={{ color: 'var(--color-gray-medium)' }}
-                    >
-                      {creds.email}
-                    </p>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Link de regreso */}

@@ -16,8 +16,8 @@ import {
   PROGRAMAS_DISPONIBLES,
   isEstudianteSeleccionado,
   type EstudianteDisponible,
-} from '../../../lib/mockdata/empresa.ts';
-import { useAuth } from '../../../hooks/useAuth.ts';
+} from '../../lib/mockdata/empresa.ts';
+import { useAuth } from '../../hooks/useAuth.ts';
 
 export function PerfilesPage() {
   const { user } = useAuth();

@@ -8,7 +8,7 @@ import {
   IconClock,
   IconAlertCircle,
 } from '@tabler/icons-react';
-import { DOCUMENTOS_ESTUDIANTE, type Documento } from '../../../lib/mockdata/estudiante.ts';
+import { DOCUMENTOS_ESTUDIANTE, type Documento } from '../../lib/mockdata/estudiante.ts';
 
 export function DocumentosPage() {
   const [documentos, setDocumentos] = useState(DOCUMENTOS_ESTUDIANTE);

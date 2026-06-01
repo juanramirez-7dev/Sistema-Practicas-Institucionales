@@ -7,7 +7,7 @@ import {
   IconCamera,
   IconAlertCircle,
 } from '@tabler/icons-react';
-import { PERFIL_ESTUDIANTE } from '../../../lib/mockdata/estudiante.ts';
+import { PERFIL_ESTUDIANTE } from '../../lib/mockdata/estudiante.ts';
 
 export function PerfilPage() {
   const [isEditing, setIsEditing] = useState(false);

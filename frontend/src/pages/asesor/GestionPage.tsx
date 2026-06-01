@@ -6,7 +6,7 @@ import {
   IconClock,
   IconUsers,
 } from '@tabler/icons-react';
-import { ESTUDIANTES_ASIGNADOS } from '../../../lib/mockdata/asesor.ts';
+import { ESTUDIANTES_ASIGNADOS } from '../../lib/mockdata/asesor.ts';
 
 export function GestionPage() {
   const getEstadoColor = (estadoProceso: number) => {
