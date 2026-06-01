@@ -3,10 +3,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Practicas.DataAccess.Context;
 using Practicas.DataAccess.Repositories;
+using Practicas.Domain.Interfaces.Observer;
 using Practicas.Domain.Interfaces.Repositories;
 using Practicas.Domain.Interfaces.Services;
+using Practicas.Domain.Interfaces.UnitOfWork;
+using Practicas.Domain.Observer;
 using Practicas.Domain.Services;
 using System.Text;
+using System.Net.Mail;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,11 +67,24 @@ builder.Services.AddAuthorization();
 
 // Services
 builder.Services.AddScoped<IPerfilProfesionalService, PerfilProfesionalService>();
-
-
+builder.Services.AddScoped<IEstudianteService, EstudianteService>();
+builder.Services.AddScoped<IHasherService, HasherService>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<INotificacionService, NotificacionService>();
+builder.Services.AddScoped<ISeleccionPerfilService, SeleccionPerfilService>();
+builder.Services.AddScoped<IEmpresaService, EmpresaService>();
 // Repositories
 builder.Services.AddScoped<IPerfilProfesionalRepository, PerfilProfesionalRepository>();
+builder.Services.AddScoped<IEstudianteRepository, EstudianteRepository>();
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<INotificacionRepository, NotificacionRepository>();
+builder.Services.AddScoped<ISeleccionPerfilRepository, SeleccionPerfilRepository>();
+builder.Services.AddScoped<IEmpresaRepository, EmpresaRepository>();
 
+
+//Observer
+builder.Services.AddScoped<IObserver, NotificacionObserver>();
+builder.Services.AddScoped<ISubject, EstudianteSeleccionadoSubject>();
 
 // Controllers
 builder.Services.AddControllers();
