@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Practicas.DataAccess.Context;
+using Practicas.DataAccess.Repositories;
+using Practicas.Domain.Interfaces.Repositories;
+using Practicas.Domain.Interfaces.Services;
+using Practicas.Domain.Services;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -58,8 +62,12 @@ builder.Services.AddAuthorization();
 // CORS
 
 // Services
+builder.Services.AddScoped<IPerfilProfesionalService, PerfilProfesionalService>();
+
 
 // Repositories
+builder.Services.AddScoped<IPerfilProfesionalRepository, PerfilProfesionalRepository>();
+
 
 // Controllers
 builder.Services.AddControllers();
