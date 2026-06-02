@@ -40,11 +40,40 @@ namespace Practicas.Domain.Services
             {
                 throw new KeyNotFoundException($"No se encontró el perfil profesional con ID: {perfil.Id}");
             }
+            if (string.IsNullOrWhiteSpace(perfil.Descripcion))
+            {
+                throw new InvalidOperationException(
+                    "La descripción no puede estar vacía.");
+            }
+
+            if (string.IsNullOrWhiteSpace(perfil.Habilidades))
+            {
+                throw new InvalidOperationException(
+                    "Las habilidades no pueden estar vacías.");
+            }
+
+            if (string.IsNullOrWhiteSpace(perfil.Tecnologias))
+            {
+                throw new InvalidOperationException(
+                    "Las tecnologías no pueden estar vacías.");
+            }
             existingPerfil.Descripcion = perfil.Descripcion;
             existingPerfil.Habilidades = perfil.Habilidades;
             existingPerfil.Tecnologias = perfil.Tecnologias;
             existingPerfil.UrlFoto = perfil.UrlFoto;
             await _repository.UpdateAsync(existingPerfil);
+        }
+        public async Task<PerfilProfesional> GetByEstudianteIdAsync(Guid estudianteId)
+        {
+            var perfil = await _repository.GetByEstudianteIdAsync(estudianteId);
+
+            if (perfil == null)
+            {
+                throw new KeyNotFoundException(
+                    $"No se encontró un perfil profesional para el estudiante con ID: {estudianteId}");
+            }
+
+            return perfil;
         }
     }
 }

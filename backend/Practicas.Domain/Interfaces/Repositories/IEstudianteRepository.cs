@@ -15,5 +15,8 @@ namespace Practicas.Domain.Interfaces.Repositories
         Task CreateAsync(Estudiante usuario);
         Task UpdateAsync(Estudiante usuario);
         Task DeleteAsync(Guid id);
+
+        Task<IEnumerable<Estudiante>> BuscarPerfilesAsync(string? textoBusqueda, string? carrera);
+        
     }
 }

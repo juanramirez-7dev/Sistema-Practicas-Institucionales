@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Practicas.DataAccess.Context;
 
@@ -11,9 +12,11 @@ using Practicas.DataAccess.Context;
 namespace Practicas.DataAccess.Migrations
 {
     [DbContext(typeof(PracticasDbContext))]
-    partial class PracticasDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260601081243_CreacionNotificacionYEmpresa")]
+    partial class CreacionNotificacionYEmpresa
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -116,6 +119,10 @@ namespace Practicas.DataAccess.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<decimal>("PromedioAcademico")
+                        .HasPrecision(4, 3)
+                        .HasColumnType("decimal(4,3)");
+
                     b.Property<string>("Telefono")
                         .IsRequired()
                         .HasMaxLength(15)
@@ -204,34 +211,6 @@ namespace Practicas.DataAccess.Migrations
                     b.ToTable("PerfilesProfesionales");
                 });
 
-            modelBuilder.Entity("Practicas.Domain.Entities.SeleccionPerfil", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("Activo")
-                        .HasColumnType("bit");
-
-                    b.Property<Guid>("EmpresaId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("EstudianteId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("FechaSeleccion")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EstudianteId");
-
-                    b.HasIndex("EmpresaId", "EstudianteId")
-                        .IsUnique();
-
-                    b.ToTable("SeleccionesPerfil");
-                });
-
             modelBuilder.Entity("Practicas.Domain.Entities.Usuario", b =>
                 {
                     b.Property<Guid>("Id")
@@ -304,38 +283,12 @@ namespace Practicas.DataAccess.Migrations
                     b.Navigation("Estudiante");
                 });
 
-            modelBuilder.Entity("Practicas.Domain.Entities.SeleccionPerfil", b =>
-                {
-                    b.HasOne("Practicas.Domain.Entities.Empresa", "Empresa")
-                        .WithMany("Selecciones")
-                        .HasForeignKey("EmpresaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Practicas.Domain.Entities.Estudiante", "Estudiante")
-                        .WithMany("Selecciones")
-                        .HasForeignKey("EstudianteId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Empresa");
-
-                    b.Navigation("Estudiante");
-                });
-
-            modelBuilder.Entity("Practicas.Domain.Entities.Empresa", b =>
-                {
-                    b.Navigation("Selecciones");
-                });
-
             modelBuilder.Entity("Practicas.Domain.Entities.Estudiante", b =>
                 {
                     b.Navigation("Notificaciones");
 
                     b.Navigation("PerfilProfesional")
                         .IsRequired();
-
-                    b.Navigation("Selecciones");
                 });
 
             modelBuilder.Entity("Practicas.Domain.Entities.Usuario", b =>

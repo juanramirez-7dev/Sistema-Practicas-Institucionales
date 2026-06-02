@@ -20,10 +20,7 @@ namespace Practicas.DataAccess.Repositories
         {
             return await _context.PerfilesProfesionales.ToListAsync();
         }
-        public async Task<PerfilProfesional?> GetByIdAsync(Guid id)
-        {
-            return await _context.PerfilesProfesionales.FindAsync(id);
-        }
+        
         public async Task CreateAsync(PerfilProfesional usuario)
         {
             await _context.PerfilesProfesionales.AddAsync(usuario);
@@ -33,6 +30,20 @@ namespace Practicas.DataAccess.Repositories
         {
             _context.PerfilesProfesionales.Update(usuario);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<PerfilProfesional?> GetByIdAsync(Guid id)
+        {
+            return await _context.PerfilesProfesionales
+                .Include(p => p.Estudiante)
+                .FirstOrDefaultAsync(p => p.Id == id);
+        }
+
+        public async Task<PerfilProfesional?> GetByEstudianteIdAsync(Guid estudianteId)
+        {
+            return await _context.PerfilesProfesionales
+                .Include(p => p.Estudiante)
+                .FirstOrDefaultAsync(p => p.EstudianteId == estudianteId);
         }
     }
 }
