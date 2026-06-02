@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Practicas.API.DTOs.PerfilProfesional;
 using Practicas.Domain.Entities;
 using Practicas.Domain.Interfaces.Services;
+using System.Security.Claims;
 
 namespace Practicas.API.Controllers
 {
@@ -52,12 +53,17 @@ namespace Practicas.API.Controllers
 
 
         //perfil completo de un estudiante
-        [HttpGet("estudiante/{estudianteId}")]
+        [HttpGet("estudiante")]
         public async Task<ActionResult<PerfilProfesionalResponseDTO>>
-            GetByEstudianteId(Guid estudianteId)
+            GetByEstudianteId()
         {
             try
             {
+                var Id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(Id, out var estudianteId))
+                {
+                    throw new UnauthorizedAccessException($"Usuario con Id no valido");
+                }
                 var perfil = await _perfilService
                     .GetByEstudianteIdAsync(estudianteId);
 
