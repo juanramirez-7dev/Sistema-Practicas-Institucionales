@@ -56,7 +56,7 @@ namespace Practicas.DataAccess.Context
                 entity.HasOne(e => e.Usuario)
                       .WithOne(u => u.Estudiante)
                       .HasForeignKey<Estudiante>(e => e.UsuarioId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .OnDelete(DeleteBehavior.Restrict);
                 
             });
 
@@ -71,7 +71,7 @@ namespace Practicas.DataAccess.Context
                 entity.HasOne(p => p.Estudiante)
                       .WithOne(e => e.PerfilProfesional)
                       .HasForeignKey<PerfilProfesional>(p => p.EstudianteId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
 
@@ -105,7 +105,7 @@ namespace Practicas.DataAccess.Context
                 entity.HasOne(e => e.Usuario)
                       .WithOne(u => u.Empresa)
                       .HasForeignKey<Empresa>(e => e.UsuarioId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
 
@@ -126,7 +126,7 @@ namespace Practicas.DataAccess.Context
                 entity.HasOne(n => n.Estudiante)
                       .WithMany(e => e.Notificaciones)
                       .HasForeignKey(n => n.EstudianteId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
 
@@ -145,12 +145,12 @@ namespace Practicas.DataAccess.Context
                 entity.HasOne(s => s.Empresa)
                       .WithMany(e => e.Selecciones)
                       .HasForeignKey(s => s.EmpresaId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(s => s.Estudiante)
                       .WithMany(e => e.Selecciones)
                       .HasForeignKey(s => s.EstudianteId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasIndex(s => new { s.EmpresaId, s.EstudianteId })
                       .IsUnique();

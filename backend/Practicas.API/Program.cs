@@ -3,23 +3,16 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Practicas.API.JWT;
 using Practicas.DataAccess.Context;
+using Practicas.DataAccess.ExternalServices;
 using Practicas.DataAccess.Repositories;
+using Practicas.Domain.Interfaces.ExternalServices;
 using Practicas.Domain.Interfaces.Observer;
 using Practicas.Domain.Interfaces.Repositories;
 using Practicas.Domain.Interfaces.Services;
 using Practicas.Domain.Interfaces.UnitOfWork;
 using Practicas.Domain.Observer;
 using Practicas.Domain.Services;
-using Practicas.DataAccess.ExternalServices;
-using Practicas.DataAccess.Repositories;
-using Practicas.Domain.Entities;
-using Practicas.Domain.Interfaces.ExternalServices;
-using Practicas.Domain.Interfaces.Repositories;
-using Practicas.Domain.Interfaces.Services;
-using Practicas.Domain.Interfaces.UnitOfWork;
-using Practicas.Domain.Services;
 using System.Text;
-using System.Net.Mail;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -82,7 +75,7 @@ builder.Services.AddHttpClient<HistorialAcademicoApiClient>(client =>
         client.BaseAddress = new Uri("https://localhost:7242/");
     });
 builder.Services.AddScoped<IEstudianteExternoService, EstudianteApiAdapter>();
-builder.Services.AddScoped<IHistorialAcademicoExternoService,HistorialAcademicoApiAdapter>();
+builder.Services.AddScoped<IHistorialAcademicoExternoService, HistorialAcademicoApiAdapter>();
 
 // Atomicidad - Unit of Work
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
