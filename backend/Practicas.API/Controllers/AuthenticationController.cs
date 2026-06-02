@@ -35,17 +35,17 @@ namespace Practicas.API.Controllers
                 var response = new LoginResponseDto
                 {
                     Id = result.UserId,
-                    Role = result.Role
+                    Rol = result.Role
                 };
                 return Ok(response);
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(ex.Message);
+                return NotFound(new { Message = ex.Message });
             }
             catch (InvalidOperationException ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { Message = ex.Message });
             }
         }
 
@@ -72,7 +72,7 @@ namespace Practicas.API.Controllers
             return Ok(new
             {
                 Id = id,
-                Role = role
+                Rol = role
             });
         }
     }

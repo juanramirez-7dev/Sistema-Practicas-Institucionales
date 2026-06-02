@@ -33,7 +33,7 @@ namespace Practicas.API.Controllers
             }
             catch( KeyNotFoundException ex)
             {
-                return NotFound(ex.Message);
+                return NotFound(new { Message = ex.Message });
             }
 
         }
