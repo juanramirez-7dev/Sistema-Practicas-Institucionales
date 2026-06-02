@@ -21,12 +21,14 @@ namespace Practicas.API.Controllers
         {
             _documentoService = documentoService;
         }
-
-        [HttpGet("/preceso")]
+        
+        [HttpGet("/proceso")]
+        [Authorize(Roles = "Estudiante")]
         public async Task<ActionResult<IEnumerable<DocumentoResponseDto>>> GetByProceso()
         {
             try
             {
+                Console.WriteLine($"Id del estudiante: {EstudianteId}");
                 var documentos = await _documentoService.GetByEstudianteIdAsync(EstudianteId);
                 return Ok(documentos.Select(d => new DocumentoResponseDto
                 {
@@ -70,7 +72,7 @@ namespace Practicas.API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<DocumentoResponseDto>> Create([FromBody] DocumentoCreateDto documentoDto)
+        public async Task<ActionResult<DocumentoResponseDto>> Create([FromForm] DocumentoCreateDto documentoDto)
         {
             try
             {
@@ -101,7 +103,7 @@ namespace Practicas.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateByTipo(Guid id, [FromBody] DocumentoUpdateDto documentoDto)
+        public async Task<ActionResult> UpdateByTipo(Guid id, [FromForm] DocumentoUpdateDto documentoDto)
         {
             try
             {

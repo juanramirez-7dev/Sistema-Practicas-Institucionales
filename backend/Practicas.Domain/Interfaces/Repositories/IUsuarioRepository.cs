@@ -1,4 +1,5 @@
 ﻿using Practicas.Domain.Entities;
+using Practicas.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,7 +10,7 @@ namespace Practicas.Domain.Interfaces.Repositories
     {
         Task<IEnumerable<Usuario>> GetAllAsync();
         Task<Usuario?> GetByIdAsync(Guid id);
-        Task<Usuario?> GetByEmailAsync(string email);
+        Task<Usuario?> GetByUserIdAndRolAsync(string login);
         Task CreateAsync(Usuario usuario);
         Task UpdateAsync(Usuario usuario);
         Task DeleteAsync(Guid id);

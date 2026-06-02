@@ -31,7 +31,7 @@ namespace Practicas.Domain.Services
             {
                 throw new InvalidOperationException("El email no es válido");
             }
-            var usuario = await _usuarioRepository.GetByEmailAsync(login);
+            var usuario = await _usuarioRepository.GetByUserIdAndRolAsync(login);
             if (usuario == null)
             {
                 throw new KeyNotFoundException($"Usuario con el email {login} no existe.");
@@ -40,8 +40,24 @@ namespace Practicas.Domain.Services
             {
                 throw new InvalidOperationException($"La contraseña o el correo son incorrectos");
             }
-            var token = _jwtService.GenerateToken(usuario.Id, usuario.Rol.ToString());
-            var response = (Token: token, UserId: usuario.Id, Role: usuario.Rol.ToString());
+
+            Guid relationId = Guid.Empty;
+
+            switch (usuario.Rol)
+            {
+                case RolUsuario.Estudiante:
+                    relationId = usuario.Estudiante.Id;
+                    break;
+                case RolUsuario.Empresa:
+                    relationId = usuario.Empresa.Id;
+                    break;
+                case RolUsuario.Oficina:
+                    relationId = usuario.OficinaEmpleado.Id;
+                    break;
+            }
+
+            var token = _jwtService.GenerateToken(relationId, usuario.Rol.ToString());
+            var response = (Token: token, UserId: relationId, Role: usuario.Rol.ToString());
 
             return response;
         }

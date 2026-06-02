@@ -36,7 +36,7 @@ namespace Practicas.API.services
 
             await fileStream.CopyToAsync(destinationStream);
 
-            string baseUrl = _configuration["BaseUrl:development"]!;
+            string baseUrl = _configuration["BaseApiUrl:development"]!;
 
             return $"{baseUrl}/uploads/{fileName}";
         }

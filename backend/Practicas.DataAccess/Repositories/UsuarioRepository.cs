@@ -1,10 +1,11 @@
-﻿using Practicas.DataAccess.Context;
-using Practicas.Domain.Interfaces.Repositories;
+﻿using Microsoft.EntityFrameworkCore;
+using Practicas.DataAccess.Context;
 using Practicas.Domain.Entities;
+using Practicas.Domain.Enums;
+using Practicas.Domain.Interfaces.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
 
 namespace Practicas.DataAccess.Repositories
 {
@@ -23,10 +24,6 @@ namespace Practicas.DataAccess.Repositories
         {
             return await _context.Usuarios.FindAsync(id);
         }
-        public async Task<Usuario?> GetByEmailAsync(string email)
-        {
-            return await _context.Usuarios.FirstOrDefaultAsync(u => u.Login == email);
-        }
         public async Task CreateAsync(Usuario usuario)
         {
             await _context.Usuarios.AddAsync(usuario);
@@ -44,6 +41,27 @@ namespace Practicas.DataAccess.Repositories
             {
                 _context.Usuarios.Remove(usuario);
                 await _context.SaveChangesAsync();
+            }
+        }
+        public async Task<Usuario?> GetByUserIdAndRolAsync(string login)    
+        {
+            var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Login == login);
+            switch (usuario?.Rol)
+            {
+                case RolUsuario.Estudiante:
+                    var estudiante = await _context.Usuarios.Include(u => u.Estudiante)
+                       .FirstOrDefaultAsync(u => u.Login == login);
+                    return estudiante;
+                case RolUsuario.Empresa:
+                    var empresa = await _context.Usuarios.Include(u => u.Empresa)
+                        .FirstOrDefaultAsync(u => u.Login == login);
+                    return empresa;
+                case RolUsuario.Oficina:
+                    var oficina = await _context.Usuarios.Include(u => u.OficinaEmpleado)
+                        .FirstOrDefaultAsync(u => u.Login == login);
+                    return oficina;
+                default:
+                    return null;
             }
         }
     }

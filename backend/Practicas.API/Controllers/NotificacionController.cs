@@ -28,9 +28,8 @@ namespace Practicas.API.Controllers
         [HttpGet]
         public async Task<ActionResult<NotificacionesResponseDTO>> GetMisNotificaciones()
         {
-            var estudiante = await _estudianteService.GetByUsuarioIdAsync(UsuarioId);
 
-            var notificaciones = await _notificacionService.ObtenerPorEstudianteAsync(estudiante.Id);
+            var notificaciones = await _notificacionService.ObtenerPorEstudianteAsync(UsuarioId);
 
             var lista = notificaciones
                 .OrderByDescending(n => n.FechaCreacion)

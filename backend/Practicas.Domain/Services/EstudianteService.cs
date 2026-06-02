@@ -21,7 +21,16 @@ namespace Practicas.Domain.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IEstudianteExternoService _estudianteAdapter;
         private readonly IHistorialAcademicoExternoService _historialAdapter;
-        public EstudianteService(IEstudianteRepository estudianteRepository, IUsuarioRepository usuarioRepository, IHasherService hasherService, IUnitOfWork unitOfWork, IPerfilProfesionalRepository perfilProfesionalRepository,IEstudianteExternoService estudianteExternoService, IHistorialAcademicoExternoService historialAdapter)
+        private readonly IProcesoRepository _procesoRepository;     
+        public EstudianteService(
+            IEstudianteRepository estudianteRepository, 
+            IUsuarioRepository usuarioRepository, 
+            IHasherService hasherService, 
+            IUnitOfWork unitOfWork, 
+            IPerfilProfesionalRepository perfilProfesionalRepository,
+            IEstudianteExternoService estudianteExternoService, 
+            IHistorialAcademicoExternoService historialAdapter,
+            IProcesoRepository procesoRepository)
         {
             _estudianteRepository = estudianteRepository;
             _hasherService = hasherService;
@@ -30,6 +39,7 @@ namespace Practicas.Domain.Services
             _perfilProfesionalRepository = perfilProfesionalRepository;
             _estudianteAdapter = estudianteExternoService;
             _historialAdapter = historialAdapter;
+            _procesoRepository = procesoRepository;
         }
 
         public async Task<IEnumerable<Estudiante>> GetAllAsync()
@@ -163,9 +173,18 @@ namespace Practicas.Domain.Services
                     EstudianteId = estudiante.Id,
                     Descripcion = "Perfil profesional de " + estudiante.Nombre
                 };
+                var proceso = new Proceso
+                {
+                    Id = Guid.NewGuid(),
+                    EstudianteId = estudiante.Id,
+                    Estado = EstadoProceso.Curso_Prepracticas,
+                    FechaInicio = DateTime.UtcNow
+                };
+
                 await _usuarioRepository.CreateAsync(usuario);
                 await _estudianteRepository.CreateAsync(estudiante);
                 await _perfilProfesionalRepository.CreateAsync(perfilProfesional);
+                await _procesoRepository.CreateAsync(proceso);
 
 
                 await _unitOfWork.SaveChangesAsync();

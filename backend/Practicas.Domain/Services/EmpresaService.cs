@@ -31,14 +31,7 @@ namespace Practicas.Domain.Services
 
         public async Task<IEnumerable<Empresa>> GetAllAsync()
         {
-            var empresas = await _empresaRepository.GetAllAsync();
-
-            if (empresas == null || !empresas.Any())
-            {
-                throw new InvalidOperationException("No se encontraron empresas.");
-            }
-
-            return empresas;
+            return await _empresaRepository.GetAllAsync();
         }
 
         public async Task<Empresa> GetByIdAsync(Guid id)

@@ -39,7 +39,7 @@ namespace Practicas.Domain.Services
             {
                 throw new KeyNotFoundException("Estudiante No encontrado");
             }
-            var proceso = await _procesoRepository.GetByIdAsync(estudiante.Id);
+            var proceso = await _procesoRepository.GetByEstudianteId(estudiante.Id);
             if (proceso == null)
             {
                 throw new KeyNotFoundException("Proceso No encontrado");
@@ -63,7 +63,7 @@ namespace Practicas.Domain.Services
             {
                 throw new KeyNotFoundException("Estudiante No encontrado");
             }
-            var proceso = await _procesoRepository.GetByIdAsync(estudiante.Id);
+            var proceso = await _procesoRepository.GetByEstudianteId(estudiante.Id);
             if (proceso == null)
             {
                 throw new KeyNotFoundException("Proceso No encontrado");

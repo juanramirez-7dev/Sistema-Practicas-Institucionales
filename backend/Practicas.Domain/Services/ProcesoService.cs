@@ -48,7 +48,7 @@ namespace Practicas.Domain.Services
                     break;
                 default:
                     throw new InvalidOperationException($"Estado no soportado: {proceso.Estado}");
-            }
+            }   
 
             var estadoContext = new EstadoProcesoContext(estadoActual);
             if (estadoContext.PuedeAvanzar(proceso))
