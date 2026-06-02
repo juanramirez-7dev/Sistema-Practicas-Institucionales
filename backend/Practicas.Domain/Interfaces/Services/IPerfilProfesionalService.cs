@@ -11,6 +11,6 @@ namespace Practicas.Domain.Interfaces.Services
         Task<PerfilProfesional> GetByIdAsync(Guid id);
         Task UpdateAsync(PerfilProfesional perfil);
 
-        Task<PerfilProfesional?> GetByEstudianteIdAsync(Guid estudianteId);
+        Task<PerfilProfesional> GetByEstudianteIdAsync(Guid estudianteId);
     }
 }

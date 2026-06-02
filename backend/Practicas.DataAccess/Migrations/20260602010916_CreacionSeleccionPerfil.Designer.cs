@@ -12,7 +12,7 @@ using Practicas.DataAccess.Context;
 namespace Practicas.DataAccess.Migrations
 {
     [DbContext(typeof(PracticasDbContext))]
-    [Migration("20260601172407_CreacionSeleccionPerfil")]
+    [Migration("20260602010916_CreacionSeleccionPerfil")]
     partial class CreacionSeleccionPerfil
     {
         /// <inheritdoc />
@@ -118,10 +118,6 @@ namespace Practicas.DataAccess.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
-                    b.Property<decimal>("PromedioAcademico")
-                        .HasPrecision(4, 3)
-                        .HasColumnType("decimal(4,3)");
 
                     b.Property<string>("Telefono")
                         .IsRequired()
@@ -272,7 +268,7 @@ namespace Practicas.DataAccess.Migrations
                     b.HasOne("Practicas.Domain.Entities.Usuario", "Usuario")
                         .WithOne("Empresa")
                         .HasForeignKey("Practicas.Domain.Entities.Empresa", "UsuarioId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Usuario");
@@ -283,7 +279,7 @@ namespace Practicas.DataAccess.Migrations
                     b.HasOne("Practicas.Domain.Entities.Usuario", "Usuario")
                         .WithOne("Estudiante")
                         .HasForeignKey("Practicas.Domain.Entities.Estudiante", "UsuarioId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Usuario");
@@ -294,7 +290,7 @@ namespace Practicas.DataAccess.Migrations
                     b.HasOne("Practicas.Domain.Entities.Estudiante", "Estudiante")
                         .WithMany("Notificaciones")
                         .HasForeignKey("EstudianteId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Estudiante");
@@ -305,7 +301,7 @@ namespace Practicas.DataAccess.Migrations
                     b.HasOne("Practicas.Domain.Entities.Estudiante", "Estudiante")
                         .WithOne("PerfilProfesional")
                         .HasForeignKey("Practicas.Domain.Entities.PerfilProfesional", "EstudianteId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Estudiante");
@@ -316,13 +312,13 @@ namespace Practicas.DataAccess.Migrations
                     b.HasOne("Practicas.Domain.Entities.Empresa", "Empresa")
                         .WithMany("Selecciones")
                         .HasForeignKey("EmpresaId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Practicas.Domain.Entities.Estudiante", "Estudiante")
                         .WithMany("Selecciones")
                         .HasForeignKey("EstudianteId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Empresa");
