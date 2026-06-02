@@ -89,7 +89,7 @@ namespace Practicas.Domain.Services
             return empresa;
         }
 
-        public async Task CreateAsync(Empresa empresa)
+        public async Task<Empresa> CreateAsync(Empresa empresa)
         {
             if (empresa == null)
             {
@@ -153,11 +153,13 @@ namespace Practicas.Domain.Services
 
                 empresa.UsuarioId = usuario.Id;
 
+
                 await _usuarioRepository.CreateAsync(usuario);
                 await _empresaRepository.CreateAsync(empresa);
 
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitAsync();
+                return empresa;
             }
             catch
             {

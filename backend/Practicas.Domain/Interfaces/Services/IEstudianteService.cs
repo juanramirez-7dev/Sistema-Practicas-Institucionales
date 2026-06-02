@@ -10,7 +10,6 @@ namespace Practicas.Domain.Interfaces.Services
         Task<IEnumerable<Estudiante>> GetAllAsync();
         Task<Estudiante> GetByIdAsync(Guid id);
         Task<Estudiante> GetByCorreoAsync(string correo);
-        Task<Estudiante> GetByCarnetAsync(int carnet);
         Task<Estudiante> GetByDocumentoAsync(string documento);
         Task<Estudiante> GetExternalStudentAsync(string documento);
         Task<int> GetApprovedCreditsAsync(string documento);

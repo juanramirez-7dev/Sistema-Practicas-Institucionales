@@ -1,4 +1,4 @@
-﻿namespace Practicas.API.DTOs
+﻿namespace Practicas.API.DTOs.Authentication
 {
     public class LoginDto
     {

@@ -16,7 +16,7 @@ namespace Practicas.Domain.Interfaces.Services
 
         Task<Empresa> GetByCorreoAsync(string correo);
 
-        Task CreateAsync(Empresa empresa);
+        Task<Empresa> CreateAsync(Empresa empresa);
 
         Task UpdateAsync(Empresa empresa);
 

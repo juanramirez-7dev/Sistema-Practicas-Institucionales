@@ -7,7 +7,7 @@ namespace Practicas.Domain.Interfaces.Services
 {
     public interface ISeleccionPerfilService
     {
-        Task SeleccionarEstudianteAsync(Guid empresaId, Guid estudianteId);
+        Task<SeleccionPerfil> SeleccionarEstudianteAsync(Guid empresaId, Guid estudianteId);
 
         Task<IEnumerable<SeleccionPerfil>> GetByEmpresaIdAsync(Guid empresaId);
 

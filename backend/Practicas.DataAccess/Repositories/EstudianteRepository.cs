@@ -27,10 +27,6 @@ namespace Practicas.DataAccess.Repositories
         {
             return await _context.Estudiantes.FirstOrDefaultAsync(e => e.Correo == correo);
         }
-        public async Task<Estudiante?> GetByCarnetAsync(int carnet)
-        {
-            return await _context.Estudiantes.FirstOrDefaultAsync(e => e.Carnet == carnet);
-        }
         public async Task<Estudiante?> GetByDocumentoAsync(string documento)
         {
             return await _context.Estudiantes.FirstOrDefaultAsync(e => e.DocumentoIdentidad == documento);

@@ -19,8 +19,6 @@ namespace Practicas.API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EstudianteResponseDto>>> GetAllAsync()
         {
-            try
-            {
                 var estudiantes = await _estudianteService.GetAllAsync();
                 var response = estudiantes.Select(e => new EstudianteResponseDto
                 {
@@ -35,11 +33,6 @@ namespace Practicas.API.Controllers
                     CreditosAprobados = e.CreditosAprobados
                 }).ToList();
                 return Ok(response);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return NotFound(ex.Message);
-            }
         }
 
         [HttpGet("Document/{documento}")]
@@ -101,65 +94,7 @@ namespace Practicas.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        [HttpGet("correo/{correo}")]
-        public async Task<ActionResult<EstudianteResponseDto>> GetByCorreoAsync(string correo)
-        {
-            try
-            {
-                var estudiante = await _estudianteService.GetByCorreoAsync(correo);
-                var response = new EstudianteResponseDto
-                {
-                    Id = estudiante.Id,
-                    Carnet = estudiante.Carnet,
-                    DocumentoIdentidad = estudiante.DocumentoIdentidad,
-                    Nombre = estudiante.Nombre,
-                    Correo = estudiante.Correo,
-                    Telefono = estudiante.Telefono,
-                    Carrera = estudiante.Carrera,
-                    Facultad = estudiante.Facultad,
-                    CreditosAprobados = estudiante.CreditosAprobados
-                };
-                return Ok(response);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
 
-        [HttpGet("carnet/{carnet}")]
-        public async Task<ActionResult<EstudianteResponseDto>> GetByCarnetAsync(int carnet)
-        {
-            try
-            {
-                var estudiante = await _estudianteService.GetByCarnetAsync(carnet);
-                var response = new EstudianteResponseDto
-                {
-                    Id = estudiante.Id,
-                    Carnet = estudiante.Carnet,
-                    DocumentoIdentidad = estudiante.DocumentoIdentidad,
-                    Nombre = estudiante.Nombre,
-                    Correo = estudiante.Correo,
-                    Telefono = estudiante.Telefono,
-                    Carrera = estudiante.Carrera,
-                    Facultad = estudiante.Facultad,
-                    CreditosAprobados = estudiante.CreditosAprobados
-                };
-                return Ok(response);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
         [HttpGet("Document/{documento}/ValidateCredits")]
         public async Task<ActionResult<CreditValidationResponseDTO>> ValidateCredits(string documento)
         {

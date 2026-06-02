@@ -36,7 +36,7 @@ namespace Practicas.Domain.Services
             _subject = subject;
         }
 
-        public async Task SeleccionarEstudianteAsync(Guid empresaId, Guid estudianteId)
+        public async Task<SeleccionPerfil> SeleccionarEstudianteAsync(Guid empresaId, Guid estudianteId)
         {
             var empresa = await _empresaRepository.GetByIdAsync(empresaId);
             if (empresa == null)
@@ -45,6 +45,8 @@ namespace Practicas.Domain.Services
             var estudiante = await _estudianteRepository.GetByIdAsync(estudianteId);
             if (estudiante == null)
                 throw new KeyNotFoundException($"No se encontró el estudiante con ID: {estudianteId}");
+
+            SeleccionPerfil seleccion;
 
             var seleccionExistente =
                 await _repository.GetByEmpresaYEstudianteAsync(empresaId, estudianteId);
@@ -58,10 +60,12 @@ namespace Practicas.Domain.Services
                 seleccionExistente.FechaSeleccion = DateTime.UtcNow;
 
                 await _repository.UpdateAsync(seleccionExistente);
+
+                seleccion = seleccionExistente;
             }
             else
             {
-                var seleccion = new SeleccionPerfil
+                seleccion = new SeleccionPerfil
                 {
                     Id = Guid.NewGuid(),
                     EmpresaId = empresaId,
@@ -87,6 +91,8 @@ namespace Practicas.Domain.Services
             _subject.Detach(_observer);
 
             await _unitOfWork.SaveChangesAsync();
+
+            return seleccion;
         }
 
         public async Task<IEnumerable<SeleccionPerfil>> GetByEmpresaIdAsync(Guid empresaId)
@@ -109,6 +115,9 @@ namespace Practicas.Domain.Services
         public async Task<IEnumerable<SeleccionPerfil>> GetByEstudianteIdAsync(Guid estudianteId)
 
         {
+            var estudiante = await _estudianteRepository.GetByIdAsync(estudianteId);
+            if (estudiante == null)
+                throw new KeyNotFoundException($"No se encontró el estudiante con ID: {estudianteId}");
             var selecciones =
                 await _repository.GetByEstudianteIdAsync(estudianteId);
 

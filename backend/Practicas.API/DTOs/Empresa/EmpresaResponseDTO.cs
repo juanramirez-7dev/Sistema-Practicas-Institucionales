@@ -18,6 +18,5 @@
 
         public string? SitioWeb { get; set; }
 
-      
     }
 }

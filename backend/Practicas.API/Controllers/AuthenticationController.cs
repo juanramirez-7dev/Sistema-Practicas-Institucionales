@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Practicas.API.DTOs;
+using Practicas.API.DTOs.Authentication;
 using Practicas.Domain.Entities;
 using Practicas.Domain.Interfaces.Services;
 using System.Security.Claims;

@@ -44,12 +44,7 @@ namespace Practicas.Domain.Services
 
         public async Task<IEnumerable<Estudiante>> GetAllAsync()
         {
-            var estudiantes = await _estudianteRepository.GetAllAsync();
-            if (estudiantes == null || !estudiantes.Any())
-            {
-                throw new InvalidOperationException("No se encontraron estudiantes.");
-            }
-            return estudiantes;
+            return await _estudianteRepository.GetAllAsync();
         }
         public async Task<Estudiante> GetByIdAsync(Guid id)
         {
@@ -78,15 +73,6 @@ namespace Practicas.Domain.Services
             if (Estudiante == null)
             {
                 throw new KeyNotFoundException($"No se encontró el estudiante con correo: {correo}");
-            }
-            return Estudiante;
-        }
-        public async Task<Estudiante> GetByCarnetAsync(int carnet)
-        {
-            var Estudiante = await _estudianteRepository.GetByCarnetAsync(carnet);
-            if (Estudiante == null)
-            {
-                throw new KeyNotFoundException($"No se encontró el estudiante con carnet: {carnet}");
             }
             return Estudiante;
         }
@@ -136,14 +122,6 @@ namespace Practicas.Domain.Services
                     $"El estudiante no cumple los requisitos. Tiene {approvedCredits} créditos aprobados y se requieren 60.");
             }
            
-            var carnetExistente =
-            await _estudianteRepository.GetByCarnetAsync(estudiante.Carnet);
-
-            if (carnetExistente != null)
-            {
-                throw new InvalidOperationException(
-                    "Ya existe un estudiante con ese carnet.");
-            }
             var documentoExistente =
              await _estudianteRepository.GetByDocumentoAsync(
              estudiante.DocumentoIdentidad);

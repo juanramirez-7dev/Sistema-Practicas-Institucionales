@@ -62,7 +62,7 @@ namespace Practicas.API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> Create(
+        public async Task<ActionResult<EmpresaResponseDTO>> Create(
             EmpresaRequestDTO dto)
         {
             try
@@ -78,9 +78,21 @@ namespace Practicas.API.Controllers
                     SitioWeb = dto.SitioWeb
                 };
 
-                await _empresaService.CreateAsync(empresa);
+                var createdEmpresa = await _empresaService.CreateAsync(empresa);
 
-                return Ok();
+                var response = new EmpresaResponseDTO
+                {
+                    Id = createdEmpresa.Id,
+                    Nit = createdEmpresa.Nit,
+                    Correo = createdEmpresa.Correo,
+                    Telefono = createdEmpresa.Telefono,
+                    Direccion = createdEmpresa.Direccion,
+                    RazonSocial = createdEmpresa.RazonSocial,
+                    Sector = createdEmpresa.Sector,
+                    SitioWeb = createdEmpresa.SitioWeb
+                };
+
+                return Ok(response);
             }
             catch (InvalidOperationException ex)
             {

@@ -10,13 +10,12 @@ namespace Practicas.Domain.Interfaces.Repositories
         Task<IEnumerable<Estudiante>> GetAllAsync();
         Task<Estudiante?> GetByIdAsync(Guid id);
         Task<Estudiante?> GetByCorreoAsync(string correo);
-        Task<Estudiante?> GetByCarnetAsync(int carnet);
         Task<Estudiante?> GetByDocumentoAsync(string documento);
         Task CreateAsync(Estudiante usuario);
         Task UpdateAsync(Estudiante usuario);
         Task DeleteAsync(Guid id);
 
-        Task<Estudiante> GetByUsuarioIdAsync(Guid usuarioId);
+        Task<Estudiante?> GetByUsuarioIdAsync(Guid usuarioId);
 
         Task<IEnumerable<Estudiante>> BuscarPerfilesAsync(string? textoBusqueda, string? carrera);
         
