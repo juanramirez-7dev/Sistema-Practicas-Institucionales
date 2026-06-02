@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Practicas.Domain.Entities
+﻿namespace Practicas.API.DTOs
 {
-    public class Estudiante
+    public class EstudianteResponseDto
     {
         public Guid Id { get; set; }
         public int Carnet { get; set; }
@@ -15,9 +11,5 @@ namespace Practicas.Domain.Entities
         public string Carrera { get; set; } = string.Empty;
         public string Facultad { get; set; } = string.Empty;
         public int CreditosAprobados { get; set; }
-
-        public Guid UsuarioId { get; set; }
-        public Usuario Usuario { get; set; } = null!;
-        public PerfilProfesional PerfilProfesional { get; set; } = null!;
     }
 }

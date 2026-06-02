@@ -41,7 +41,6 @@ namespace Practicas.DataAccess.Context
                 entity.Property(e => e.Carrera).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.Facultad).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.CreditosAprobados).IsRequired();
-                entity.Property(e => e.PromedioAcademico).HasPrecision(4, 3).IsRequired();
                 entity.Property(e => e.UsuarioId).IsRequired();
                 entity.HasIndex(e => e.Correo).IsUnique();
                 entity.HasIndex(e => e.Carnet).IsUnique();
