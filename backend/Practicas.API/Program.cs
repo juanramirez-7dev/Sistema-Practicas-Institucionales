@@ -1,11 +1,14 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Practicas.API.services;
 using Practicas.DataAccess.Context;
 using Practicas.DataAccess.Repositories;
 using Practicas.Domain.Interfaces.Repositories;
 using Practicas.Domain.Interfaces.Services;
+using Practicas.Domain.Interfaces.UnitOfWork;
 using Practicas.Domain.Services;
+using Practicas.Domain.States.Context;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -63,10 +66,19 @@ builder.Services.AddAuthorization();
 
 // Services
 builder.Services.AddScoped<IPerfilProfesionalService, PerfilProfesionalService>();
-
+builder.Services.AddScoped<IDocumentoService, DocumentoService>();
+builder.Services.AddScoped<IProcesoService, ProcesoService>();
+builder.Services.AddScoped<ISaveFileService, SaveFileService>();
+builder.Services.AddScoped<IEstudianteService, EstudianteService>();
+builder.Services.AddScoped<IHasherService, HasherService>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Repositories
 builder.Services.AddScoped<IPerfilProfesionalRepository, PerfilProfesionalRepository>();
+builder.Services.AddScoped<IDocumentoRepository, DocumentoRepository>();
+builder.Services.AddScoped<IProcesoRepository, ProcesoRepository>();
+builder.Services.AddScoped<IEstudianteRepository, EstudianteRepository>();
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 
 
 // Controllers

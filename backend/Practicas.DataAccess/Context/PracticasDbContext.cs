@@ -1,17 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Practicas.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Practicas.DataAccess.Context
 {
-    public class PracticasDbContext: DbContext
+    public class PracticasDbContext : DbContext
     {
 
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<Estudiante> Estudiantes { get; set; }
         public DbSet<PerfilProfesional> PerfilesProfesionales { get; set; }
+        public DbSet<OficinaEmpleado> OficinaEmpleados { get; set; }
+        public DbSet<Proceso> Procesos { get; set; }
+        public DbSet<Documento> Documentos { get; set; }
 
         public PracticasDbContext(DbContextOptions<PracticasDbContext> options) : base(options)
         {
@@ -71,7 +71,46 @@ namespace Practicas.DataAccess.Context
                       .OnDelete(DeleteBehavior.Cascade);
             });
 
+            modelBuilder.Entity<OficinaEmpleado>(entity =>
+            {
+                entity.HasKey(o => o.Id);
+                entity.Property(o => o.Codigo).IsRequired().HasMaxLength(30);
+                entity.Property(o => o.Nombre).IsRequired().HasMaxLength(100);
+                entity.Property(o => o.Sede).IsRequired().HasMaxLength(100);
+                entity.Property(o => o.UsuarioId).IsRequired();
+                entity.HasOne(o => o.Usuario)
+                      .WithOne(u => u.OficinaEmpleado)
+                      .HasForeignKey<OficinaEmpleado>(o => o.UsuarioId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
 
+            modelBuilder.Entity<Proceso>(entity =>
+            {
+                entity.HasKey(p => p.Id);
+                entity.Property(p => p.Estado).IsRequired().HasMaxLength(100);
+                entity.Property(p => p.FechaInicio).IsRequired();
+                entity.Property(p => p.FechaFin);
+                entity.Property(p => p.EstudianteId).IsRequired();
+                entity.HasOne(p => p.Estudiante)
+                      .WithOne(e => e.Proceso)
+                      .HasForeignKey<Proceso>(p => p.EstudianteId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Documento>(entity =>
+            {
+                entity.HasKey(d => d.Id);
+                entity.Property(d => d.Estado).IsRequired().HasMaxLength(100);
+                entity.Property(d => d.Tipo).IsRequired().HasMaxLength(50);
+                entity.Property(d => d.Observacion).HasMaxLength(250);
+                entity.Property(d => d.FechaCarga).IsRequired();
+                entity.Property(d => d.Url).IsRequired().HasMaxLength(500);
+                entity.Property(d => d.ProcesoId).IsRequired();
+                entity.HasOne(d => d.Proceso)
+                      .WithMany(p => p.Documentos)
+                      .HasForeignKey(d => d.ProcesoId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
         }
     }
 }

@@ -19,5 +19,6 @@ namespace Practicas.Domain.Entities
         public Guid UsuarioId { get; set; }
         public Usuario Usuario { get; set; } = null!;
         public PerfilProfesional PerfilProfesional { get; set; } = null!;
+        public Proceso Proceso { get; set; } = null!;
     }
 }
