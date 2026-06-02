@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Practicas.API.DTOs;
+using Practicas.API.DTOs.Empresa;
 using Practicas.Domain.Entities;
 using Practicas.Domain.Interfaces.Services;
 

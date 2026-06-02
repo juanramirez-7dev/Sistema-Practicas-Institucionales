@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Practicas.API.DTOs;
+using Practicas.API.DTOs.Empresa;
+using Practicas.API.DTOs.SeleccionPerfil;
 using Practicas.Domain.Interfaces.Services;
+using System.Security.Claims;
 
 namespace Practicas.API.Controllers
 {
@@ -10,7 +13,8 @@ namespace Practicas.API.Controllers
     public class SeleccionPerfilController : ControllerBase
     {
         private readonly ISeleccionPerfilService _seleccionService;
-
+        protected Guid UsuarioId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        
         public SeleccionPerfilController(
             ISeleccionPerfilService seleccionService)
         {
@@ -41,6 +45,7 @@ namespace Practicas.API.Controllers
         }
 
         [HttpGet("empresa/{empresaId}")]
+        [Authorize(Roles ="Empresa")]
         public async Task<ActionResult<MiSeleccionResponseDTO>>
             GetByEmpresaId(Guid empresaId)
         {
@@ -58,9 +63,13 @@ namespace Practicas.API.Controllers
                         SeleccionId = s.Id,
                         EstudianteId = s.EstudianteId,
                         Nombre = s.Estudiante.Nombre,
+                        Carrera = s.Estudiante.Carrera,
+                        Descripcion = s.Estudiante.PerfilProfesional.Descripcion,
+                        Habilidades = s.Estudiante.PerfilProfesional.Habilidades,
+                        Tecnologias = s.Estudiante.PerfilProfesional.Tecnologias,
                         Correo = s.Estudiante.Correo,
                         Telefono = s.Estudiante.Telefono,
-                        Carrera = s.Estudiante.Carrera,
+                        UrlFoto = s.Estudiante.PerfilProfesional.UrlFoto,
                         FechaSeleccion = s.FechaSeleccion
                     })
             };
@@ -69,10 +78,11 @@ namespace Practicas.API.Controllers
         }
 
         [HttpGet("estudiante/{estudianteId}")]
+        [Authorize(Roles = "Estudiante")]
         public async Task<ActionResult<EmpresasInteresadasResponseDTO>>
             GetByEstudianteId(Guid estudianteId)
         {
-            var selecciones =
+            var selecciones = 
                 await _seleccionService
                     .GetByEstudianteIdAsync(estudianteId);
 
@@ -93,7 +103,10 @@ namespace Practicas.API.Controllers
                             Telefono = s.Empresa.Telefono,
                             FechaSeleccion = s.FechaSeleccion
                         })
+                    
                 };
+
+            
 
             return Ok(response);
         }

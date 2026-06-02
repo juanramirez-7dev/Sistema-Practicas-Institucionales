@@ -1,7 +1,9 @@
-﻿namespace Practicas.API.DTOs
+﻿namespace Practicas.API.DTOs.Empresa
 {
-    public class EmpresaRequestDTO
+    public class EmpresaResponseDTO
     {
+        public Guid Id { get; set; }
+
         public string Nit { get; set; } = string.Empty;
 
         public string Correo { get; set; } = string.Empty;
@@ -15,5 +17,7 @@
         public string Sector { get; set; } = string.Empty;
 
         public string? SitioWeb { get; set; }
+
+      
     }
 }

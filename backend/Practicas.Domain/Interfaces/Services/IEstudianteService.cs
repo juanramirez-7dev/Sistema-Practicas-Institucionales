@@ -20,6 +20,8 @@ namespace Practicas.Domain.Interfaces.Services
          string? textoBusqueda,
          string? carrera);
 
+        Task<Estudiante> GetByUsuarioIdAsync(Guid usuarioId);
+
 
     }
 }

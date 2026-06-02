@@ -104,11 +104,7 @@ namespace Practicas.Domain.Services
             {
                 throw new InvalidOperationException("Los créditos aprobados no pueden ser negativos.");
             }
-            if (estudiante.PromedioAcademico < 0 || estudiante.PromedioAcademico > 5)
-            {
-                throw new InvalidOperationException("El promedio académico debe estar entre 0 y 5.");
-            }
-           
+            
             var carnetExistente =
             await _estudianteRepository.GetByCarnetAsync(estudiante.Carnet);
 
@@ -193,6 +189,20 @@ namespace Practicas.Domain.Services
             return await _estudianteRepository.BuscarPerfilesAsync(
                 textoBusqueda,
                 carrera);
+        }
+
+        public async Task<Estudiante> GetByUsuarioIdAsync(Guid usuarioId)
+        {
+            var estudiante =
+                await _estudianteRepository.GetByUsuarioIdAsync(usuarioId);
+
+            if (estudiante == null)
+            {
+                throw new KeyNotFoundException(
+                    $"No se encontró un estudiante asociado al usuario {usuarioId}");
+            }
+
+            return estudiante;
         }
 
     }

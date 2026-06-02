@@ -37,10 +37,11 @@ namespace Practicas.DataAccess.Repositories
         }
 
         public async Task<IEnumerable<SeleccionPerfil>>
-            GetByEmpresaIdAsync(Guid empresaId)
+        GetByEmpresaIdAsync(Guid empresaId)
         {
             return await _context.SeleccionesPerfil
                 .Include(s => s.Estudiante)
+                    .ThenInclude(e => e.PerfilProfesional)
                 .Where(s =>
                     s.EmpresaId == empresaId &&
                     s.Activo)
