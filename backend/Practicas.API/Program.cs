@@ -14,6 +14,7 @@ using Practicas.Domain.Interfaces.UnitOfWork;
 using Practicas.Domain.Observer;
 using Practicas.Domain.Services;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -112,9 +113,28 @@ builder.Services.AddScoped<IObserver, NotificacionObserver>();
 builder.Services.AddScoped<ISubject, EstudianteSeleccionadoSubject>();
 
 // CORS
+var allowedOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Front", policy =>
+    {
+        policy.WithOrigins(allowedOrigins!)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
 
 // Controllers
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+        .AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.Converters
+           .Add(new JsonStringEnumConverter());  // convierte enums a string en JSON
+        });
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -134,10 +154,11 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
-// use CORS
+app.UseCors("Front");
 
-// app.UseAuthentication();
-// app.UseAuthorization();
+app.UseAuthentication();
+
+app.UseAuthorization();
 
 app.MapControllers();
 
