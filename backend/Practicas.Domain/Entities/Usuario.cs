@@ -13,6 +13,8 @@ namespace Practicas.Domain.Entities
         public RolUsuario Rol { get; set; }
 
         public Estudiante? Estudiante { get; set; }
+
+        public Empresa? Empresa { get; set; }
         public OficinaEmpleado? OficinaEmpleado { get; set; }
     }
 }

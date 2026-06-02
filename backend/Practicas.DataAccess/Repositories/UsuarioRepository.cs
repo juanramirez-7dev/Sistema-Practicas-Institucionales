@@ -23,6 +23,10 @@ namespace Practicas.DataAccess.Repositories
         {
             return await _context.Usuarios.FindAsync(id);
         }
+        public async Task<Usuario?> GetByEmailAsync(string email)
+        {
+            return await _context.Usuarios.FirstOrDefaultAsync(u => u.Login == email);
+        }
         public async Task CreateAsync(Usuario usuario)
         {
             await _context.Usuarios.AddAsync(usuario);

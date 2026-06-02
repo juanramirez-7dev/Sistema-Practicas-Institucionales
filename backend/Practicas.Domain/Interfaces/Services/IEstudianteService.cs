@@ -12,13 +12,17 @@ namespace Practicas.Domain.Interfaces.Services
         Task<Estudiante> GetByCorreoAsync(string correo);
         Task<Estudiante> GetByCarnetAsync(int carnet);
         Task<Estudiante> GetByDocumentoAsync(string documento);
-        Task CreateAsync(Estudiante usuario);
-        Task UpdateAsync(Estudiante usuario);
+        Task<Estudiante> GetExternalStudentAsync(string documento);
+        Task<int> GetApprovedCreditsAsync(string documento);
+        Task<Estudiante> CreateAsync(string document);
+        Task UpdateAsync(string documento);
         Task DeleteAsync(Guid id);
 
         Task<IEnumerable<Estudiante>> BuscarPerfilesAsync(
          string? textoBusqueda,
          string? carrera);
+
+        Task<Estudiante> GetByUsuarioIdAsync(Guid usuarioId);
 
 
     }

@@ -1,4 +1,4 @@
-﻿namespace Practicas.API.DTOs
+﻿namespace Practicas.API.DTOs.PerfilProfesional
 {
     public class PerfilProfesionalResponseDTO
     {
@@ -13,12 +13,6 @@
         public string Telefono { get; set; } = string.Empty;
 
         public string Carrera { get; set; } = string.Empty;
-
-        public string Facultad { get; set; } = string.Empty;
-
-        public int CreditosAprobados { get; set; }
-
-        public decimal PromedioAcademico { get; set; }
 
         public string Descripcion { get; set; } = string.Empty;
 

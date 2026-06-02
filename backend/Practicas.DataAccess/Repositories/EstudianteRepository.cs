@@ -78,5 +78,15 @@ namespace Practicas.DataAccess.Repositories
 
             return await query.ToListAsync();
         }
+
+
+            public async Task<Estudiante?> GetByUsuarioIdAsync(Guid usuarioId)
+        {
+            return await _context.Estudiantes
+                .Include(e => e.PerfilProfesional)
+                .FirstOrDefaultAsync(e => e.UsuarioId == usuarioId);
+        }
+
+    
     }
 }

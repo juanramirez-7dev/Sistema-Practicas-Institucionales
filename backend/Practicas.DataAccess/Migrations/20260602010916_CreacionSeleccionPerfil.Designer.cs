@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Practicas.DataAccess.Context;
 
@@ -11,9 +12,11 @@ using Practicas.DataAccess.Context;
 namespace Practicas.DataAccess.Migrations
 {
     [DbContext(typeof(PracticasDbContext))]
-    partial class PracticasDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260602010916_CreacionSeleccionPerfil")]
+    partial class CreacionSeleccionPerfil
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,40 +25,61 @@ namespace Practicas.DataAccess.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Practicas.Domain.Entities.Documento", b =>
+            modelBuilder.Entity("Practicas.Domain.Entities.Empresa", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("Estado")
-                        .HasMaxLength(100)
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("FechaCarga")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Observacion")
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
-
-                    b.Property<Guid>("ProcesoId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Tipo")
-                        .HasMaxLength(50)
-                        .HasColumnType("int");
-
-                    b.Property<string>("Url")
+                    b.Property<string>("Correo")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Direccion")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Nit")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("RazonSocial")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Sector")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("SitioWeb")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Telefono")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProcesoId");
+                    b.HasIndex("Correo")
+                        .IsUnique();
 
-                    b.ToTable("Documentos");
+                    b.HasIndex("Nit")
+                        .IsUnique();
+
+                    b.HasIndex("UsuarioId")
+                        .IsUnique();
+
+                    b.ToTable("Empresas");
                 });
 
             modelBuilder.Entity("Practicas.Domain.Entities.Estudiante", b =>
@@ -120,36 +144,31 @@ namespace Practicas.DataAccess.Migrations
                     b.ToTable("Estudiantes");
                 });
 
-            modelBuilder.Entity("Practicas.Domain.Entities.OficinaEmpleado", b =>
+            modelBuilder.Entity("Practicas.Domain.Entities.Notificacion", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Codigo")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<string>("Nombre")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Sede")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<Guid>("UsuarioId")
+                    b.Property<Guid>("EstudianteId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Leida")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Mensaje")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UsuarioId")
-                        .IsUnique();
+                    b.HasIndex("EstudianteId");
 
-                    b.ToTable("OficinaEmpleados");
+                    b.ToTable("Notificaciones");
                 });
 
             modelBuilder.Entity("Practicas.Domain.Entities.PerfilProfesional", b =>
@@ -188,31 +207,32 @@ namespace Practicas.DataAccess.Migrations
                     b.ToTable("PerfilesProfesionales");
                 });
 
-            modelBuilder.Entity("Practicas.Domain.Entities.Proceso", b =>
+            modelBuilder.Entity("Practicas.Domain.Entities.SeleccionPerfil", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("Estado")
-                        .HasMaxLength(100)
-                        .HasColumnType("int");
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("EmpresaId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("EstudianteId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime?>("FechaFin")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("FechaInicio")
+                    b.Property<DateTime>("FechaSeleccion")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EstudianteId")
+                    b.HasIndex("EstudianteId");
+
+                    b.HasIndex("EmpresaId", "EstudianteId")
                         .IsUnique();
 
-                    b.ToTable("Procesos");
+                    b.ToTable("SeleccionesPerfil");
                 });
 
             modelBuilder.Entity("Practicas.Domain.Entities.Usuario", b =>
@@ -243,15 +263,15 @@ namespace Practicas.DataAccess.Migrations
                     b.ToTable("Usuarios");
                 });
 
-            modelBuilder.Entity("Practicas.Domain.Entities.Documento", b =>
+            modelBuilder.Entity("Practicas.Domain.Entities.Empresa", b =>
                 {
-                    b.HasOne("Practicas.Domain.Entities.Proceso", "Proceso")
-                        .WithMany("Documentos")
-                        .HasForeignKey("ProcesoId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("Practicas.Domain.Entities.Usuario", "Usuario")
+                        .WithOne("Empresa")
+                        .HasForeignKey("Practicas.Domain.Entities.Empresa", "UsuarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Proceso");
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("Practicas.Domain.Entities.Estudiante", b =>
@@ -265,15 +285,15 @@ namespace Practicas.DataAccess.Migrations
                     b.Navigation("Usuario");
                 });
 
-            modelBuilder.Entity("Practicas.Domain.Entities.OficinaEmpleado", b =>
+            modelBuilder.Entity("Practicas.Domain.Entities.Notificacion", b =>
                 {
-                    b.HasOne("Practicas.Domain.Entities.Usuario", "Usuario")
-                        .WithOne("OficinaEmpleado")
-                        .HasForeignKey("Practicas.Domain.Entities.OficinaEmpleado", "UsuarioId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("Practicas.Domain.Entities.Estudiante", "Estudiante")
+                        .WithMany("Notificaciones")
+                        .HasForeignKey("EstudianteId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Usuario");
+                    b.Navigation("Estudiante");
                 });
 
             modelBuilder.Entity("Practicas.Domain.Entities.PerfilProfesional", b =>
@@ -306,15 +326,9 @@ namespace Practicas.DataAccess.Migrations
                     b.Navigation("Estudiante");
                 });
 
-            modelBuilder.Entity("Practicas.Domain.Entities.Proceso", b =>
+            modelBuilder.Entity("Practicas.Domain.Entities.Empresa", b =>
                 {
-                    b.HasOne("Practicas.Domain.Entities.Estudiante", "Estudiante")
-                        .WithOne("Proceso")
-                        .HasForeignKey("Practicas.Domain.Entities.Proceso", "EstudianteId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Estudiante");
+                    b.Navigation("Selecciones");
                 });
 
             modelBuilder.Entity("Practicas.Domain.Entities.Estudiante", b =>
@@ -324,13 +338,7 @@ namespace Practicas.DataAccess.Migrations
                     b.Navigation("PerfilProfesional")
                         .IsRequired();
 
-                    b.Navigation("Proceso")
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Practicas.Domain.Entities.Proceso", b =>
-                {
-                    b.Navigation("Documentos");
+                    b.Navigation("Selecciones");
                 });
 
             modelBuilder.Entity("Practicas.Domain.Entities.Usuario", b =>
@@ -338,8 +346,6 @@ namespace Practicas.DataAccess.Migrations
                     b.Navigation("Empresa");
 
                     b.Navigation("Estudiante");
-
-                    b.Navigation("OficinaEmpleado");
                 });
 #pragma warning restore 612, 618
         }

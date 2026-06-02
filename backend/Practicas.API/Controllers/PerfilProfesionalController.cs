@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Practicas.API.DTOs;
+using Practicas.API.DTOs.PerfilProfesional;
 using Practicas.Domain.Entities;
 using Practicas.Domain.Interfaces.Services;
 
@@ -21,39 +21,45 @@ namespace Practicas.API.Controllers
             _estudianteService = estudianteService;
         }
 
-        [HttpGet("buscar")]
-        public async Task<ActionResult<IEnumerable<PerfilProfesionalResponseDTO>>> Buscar(
-            [FromQuery] string? textoBusqueda,
-            [FromQuery] string? carrera)
+        [HttpGet]
+        public async Task<ActionResult<PerfilesResponseDTO>> Buscar(
+        [FromQuery] string? textoBusqueda,
+        [FromQuery] string? carrera)
         {
             var estudiantes = await _estudianteService
                 .BuscarPerfilesAsync(textoBusqueda, carrera);
 
-            return Ok(estudiantes.Select(e =>
-                new PerfilProfesionalResponseDTO
-                {
-                    Id = e.PerfilProfesional.Id,
-                    EstudianteId = e.Id,
-                    Nombre = e.Nombre,
-                    Correo = e.Correo,
-                    Telefono = e.Telefono,
-                    Carrera = e.Carrera,
-                    Facultad = e.Facultad,
-                    CreditosAprobados = e.CreditosAprobados,
-                    PromedioAcademico = e.PromedioAcademico,
-                    Descripcion = e.PerfilProfesional.Descripcion,
-                    Habilidades = e.PerfilProfesional.Habilidades,
-                    Tecnologias = e.PerfilProfesional.Tecnologias,
-                    UrlFoto = e.PerfilProfesional.UrlFoto
-                }));
+            var response = new PerfilesResponseDTO
+            {
+                TotalPerfiles = estudiantes.Count(),
+
+                Perfiles = estudiantes.Select(e =>
+                    new PerfilListadoResponseDTO
+                    {
+                        EstudianteId = e.Id,
+                        Nombre = e.Nombre,
+                        Carrera = e.Carrera,
+                        Habilidades = e.PerfilProfesional.Habilidades,
+                        UrlFoto = e.PerfilProfesional.UrlFoto,
+
+                        // por ahora
+                        Seleccionado = false
+                    })
+            };
+
+            return Ok(response);
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<PerfilProfesionalResponseDTO>> GetById(Guid id)
+
+        //perfil completo de un estudiante
+        [HttpGet("estudiante/{estudianteId}")]
+        public async Task<ActionResult<PerfilProfesionalResponseDTO>>
+            GetByEstudianteId(Guid estudianteId)
         {
             try
             {
-                var perfil = await _perfilService.GetByIdAsync(id);
+                var perfil = await _perfilService
+                    .GetByEstudianteIdAsync(estudianteId);
 
                 return Ok(new PerfilProfesionalResponseDTO
                 {
@@ -63,9 +69,6 @@ namespace Practicas.API.Controllers
                     Correo = perfil.Estudiante.Correo,
                     Telefono = perfil.Estudiante.Telefono,
                     Carrera = perfil.Estudiante.Carrera,
-                    Facultad = perfil.Estudiante.Facultad,
-                    CreditosAprobados = perfil.Estudiante.CreditosAprobados,
-                    PromedioAcademico = perfil.Estudiante.PromedioAcademico,
                     Descripcion = perfil.Descripcion,
                     Habilidades = perfil.Habilidades,
                     Tecnologias = perfil.Tecnologias,
@@ -78,16 +81,19 @@ namespace Practicas.API.Controllers
             }
         }
 
-        [HttpPut("{id}")]
+
+        //actualiza un perfil
+
+        [HttpPut("{perfilId}")]
         public async Task<ActionResult> Update(
-            Guid id,
+            Guid perfilId,
             PerfilProfesionalRequestDTO dto)
         {
             try
             {
                 var perfil = new PerfilProfesional
                 {
-                    Id = id,
+                    Id = perfilId,
                     Descripcion = dto.Descripcion,
                     Habilidades = dto.Habilidades,
                     Tecnologias = dto.Tecnologias,
