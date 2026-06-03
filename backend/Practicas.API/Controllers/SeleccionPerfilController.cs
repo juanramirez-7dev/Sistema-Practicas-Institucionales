@@ -69,12 +69,9 @@ namespace Practicas.API.Controllers
 
         [HttpGet("empresa/{empresaId}")]
         [Authorize(Roles ="Empresa")]
-        public async Task<ActionResult<MiSeleccionResponseDTO>>
-            GetByEmpresaId(Guid empresaId)
+        public async Task<ActionResult<MiSeleccionResponseDTO>> GetByEmpresaId(Guid empresaId)
         {
-            var selecciones =
-                await _seleccionService
-                    .GetByEmpresaIdAsync(empresaId);
+            var selecciones =await _seleccionService.GetByEmpresaIdAsync(empresaId);
 
             var response = new MiSeleccionResponseDTO
             {
@@ -150,9 +147,9 @@ namespace Practicas.API.Controllers
             }
         }
 
-            [HttpDelete("{seleccionId}")]
-        public async Task<ActionResult>
-            DesactivarSeleccion(Guid seleccionId)
+        [HttpDelete("{seleccionId}")]
+        [Authorize(Roles = "Empresa")]
+        public async Task<ActionResult> DesactivarSeleccion(Guid seleccionId)
         {
             try
             {

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Practicas.API.DTOs.Proceso;
 using Practicas.Domain.Interfaces.Services;
@@ -20,6 +21,7 @@ namespace Practicas.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Estudiante,Oficina")]
         public async Task<ActionResult<ProcesoResponseDto>> GetByEstudiante()
         {
             try

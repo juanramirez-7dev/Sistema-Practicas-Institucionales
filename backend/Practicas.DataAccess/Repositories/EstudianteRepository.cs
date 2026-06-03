@@ -1,10 +1,11 @@
-﻿using Practicas.DataAccess.Context;
-using Practicas.Domain.Interfaces.Repositories;
+﻿using Microsoft.EntityFrameworkCore;
+using Practicas.DataAccess.Context;
 using Practicas.Domain.Entities;
+using Practicas.Domain.Enums;
+using Practicas.Domain.Interfaces.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
 
 namespace Practicas.DataAccess.Repositories
 {
@@ -55,7 +56,9 @@ namespace Practicas.DataAccess.Repositories
 
         {
             IQueryable<Estudiante> query = _context.Estudiantes
-                .Include(e => e.PerfilProfesional);
+                .Include(e => e.PerfilProfesional)
+                .Include(e => e.Proceso)
+                .Where(e => e.Proceso.Estado == EstadoProceso.Visible_Para_Empresas);
 
             if (!string.IsNullOrWhiteSpace(textoBusqueda))
             {
