@@ -67,7 +67,7 @@ namespace Practicas.API.Controllers
             }
         }
 
-        [HttpGet("empresa/{empresaId}")]
+        [HttpGet("empresa")]
         [Authorize(Roles ="Empresa")]
         public async Task<ActionResult<MiSeleccionResponseDTO>> GetByEmpresaId(Guid empresaId)
         {

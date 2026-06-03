@@ -97,6 +97,37 @@ namespace Practicas.API.Controllers
             }
         }
 
+        //perfil completo de un estudiante por id
+        [HttpGet("estudiante/{estudianteId}")]
+        public async Task<ActionResult<PerfilProfesionalResponseDTO>>
+            GetByEstudianteIdForEmpresa(Guid estudianteId)
+        {
+            try
+            {
+                
+                var perfil = await _perfilService
+                    .GetByEstudianteIdAsync(estudianteId);
+
+                return Ok(new PerfilProfesionalResponseDTO
+                {
+                    Id = perfil.Id,
+                    EstudianteId = perfil.EstudianteId,
+                    Nombre = perfil.Estudiante.Nombre,
+                    Correo = perfil.Estudiante.Correo,
+                    Telefono = perfil.Estudiante.Telefono,
+                    Carrera = perfil.Estudiante.Carrera,
+                    Descripcion = perfil.Descripcion,
+                    Habilidades = perfil.Habilidades,
+                    Tecnologias = perfil.Tecnologias,
+                    UrlFoto = perfil.UrlFoto
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+        }
+
 
         //actualiza un perfil
 

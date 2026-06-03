@@ -22,7 +22,7 @@ namespace Practicas.API.Controllers
             _documentoService = documentoService;
         }
         
-        [HttpGet("/proceso")]
+        [HttpGet("proceso")]
         [Authorize(Roles = "Estudiante,Oficina")]
         public async Task<ActionResult<IEnumerable<DocumentoResponseDto>>> GetByProceso()
         {
