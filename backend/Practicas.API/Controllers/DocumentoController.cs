@@ -23,7 +23,7 @@ namespace Practicas.API.Controllers
         }
         
         [HttpGet("proceso")]
-        [Authorize(Roles = "Estudiante")]
+        [Authorize(Roles = "Estudiante,Oficina")]
         public async Task<ActionResult<IEnumerable<DocumentoResponseDto>>> GetByProceso()
         {
             try
@@ -49,6 +49,7 @@ namespace Practicas.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<ActionResult<DocumentoResponseDto>> GetById(Guid id)
         {
             try
@@ -72,6 +73,7 @@ namespace Practicas.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Estudiante")]
         public async Task<ActionResult<DocumentoResponseDto>> Create([FromForm] DocumentoCreateDto documentoDto)
         {
             try
@@ -103,6 +105,7 @@ namespace Practicas.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Estudiante")]
         public async Task<ActionResult> UpdateByTipo(Guid id, [FromForm] DocumentoUpdateDto documentoDto)
         {
             try
@@ -125,6 +128,7 @@ namespace Practicas.API.Controllers
         }
 
         [HttpPatch("{id}/estado")]
+        [Authorize(Roles = "Oficina")]
         public async Task<ActionResult> UpdateEstado(Guid id, DocumentoUpdateEstadoDto dto)
         {
             try

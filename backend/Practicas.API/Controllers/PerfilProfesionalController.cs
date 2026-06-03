@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Practicas.API.DTOs.PerfilProfesional;
 using Practicas.Domain.Entities;
@@ -23,6 +24,7 @@ namespace Practicas.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Empresa,Oficina")]
         public async Task<ActionResult<PerfilesResponseDTO>> Buscar(
         [FromQuery] string? textoBusqueda,
         [FromQuery] string? carrera)
@@ -54,6 +56,7 @@ namespace Practicas.API.Controllers
 
         //perfil completo de un estudiante
         [HttpGet("estudiante")]
+        [Authorize(Roles = "Empresa,Oficina")]
         public async Task<ActionResult<PerfilProfesionalResponseDTO>>
             GetByEstudianteId()
         {
@@ -122,6 +125,7 @@ namespace Practicas.API.Controllers
         //actualiza un perfil
 
         [HttpPut("{perfilId}")]
+        [Authorize(Roles = "Estudiante")]
         public async Task<ActionResult> Update(
             Guid perfilId,
             PerfilProfesionalRequestDTO dto)

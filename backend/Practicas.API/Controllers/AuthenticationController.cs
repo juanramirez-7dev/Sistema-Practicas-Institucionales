@@ -50,6 +50,7 @@ namespace Practicas.API.Controllers
         }
 
         [HttpPost("logout")]
+        [Authorize]
         public IActionResult Logout()
         {
             Response.Cookies.Delete("access_token", new CookieOptions
@@ -61,8 +62,8 @@ namespace Practicas.API.Controllers
             return Ok();
         }
 
-        [Authorize]
         [HttpGet("me")]
+        [Authorize]
         public IActionResult Me()
         {
             var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

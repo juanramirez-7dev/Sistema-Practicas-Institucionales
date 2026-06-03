@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Practicas.API.DTOs;
 using Practicas.Domain.Interfaces.Services;
@@ -17,6 +18,7 @@ namespace Practicas.API.Controllers
         }
 
         [HttpGet]
+        [Authorize (Roles = "Oficina")]
         public async Task<ActionResult<IEnumerable<EstudianteResponseDto>>> GetAllAsync()
         {
                 var estudiantes = await _estudianteService.GetAllAsync();
@@ -36,6 +38,7 @@ namespace Practicas.API.Controllers
         }
 
         [HttpGet("Document/{documento}")]
+        [Authorize(Roles = "Oficina")]
         public async Task<ActionResult<EstudianteResponseDto>> GetByDocumentoAsync(string documento)
         {
             try
@@ -66,6 +69,7 @@ namespace Practicas.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Oficina")]
         public async Task<ActionResult<EstudianteResponseDto>> GetByIdAsync(Guid id)
         {
             try
@@ -154,6 +158,7 @@ namespace Practicas.API.Controllers
         }
 
         [HttpPut("Document/{documento}")]
+        [Authorize(Roles = "Oficina")]
         public async Task<IActionResult> Update(string documento)
         {
             try
