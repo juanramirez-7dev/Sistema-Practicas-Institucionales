@@ -21,5 +21,7 @@
         public string Tecnologias { get; set; } = string.Empty;
 
         public string? UrlFoto { get; set; }
+
+        public string? UrlHojaVida { get; set; }
     }
 }

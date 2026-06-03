@@ -15,5 +15,8 @@ namespace Practicas.Domain.Interfaces.Services
         Task AceptarAsync(Guid id);
         Task RechazarAsync(Guid id, string observacion);
 
+        Task<Documento?> GetHojaVidaByEstudianteIdAsync(
+        Guid estudianteId);
+
     }
 }

@@ -126,5 +126,12 @@ namespace Practicas.Domain.Services
             documento.Observacion = observacion;
             await _documentoRepository.UpdateAsync(documento);
         }
+
+        public async Task<Documento?> GetHojaVidaByEstudianteIdAsync(
+        Guid estudianteId)
+        {
+            return await _documentoRepository
+                .GetHojaVidaByEstudianteIdAsync(estudianteId);
+        }
     }
 }

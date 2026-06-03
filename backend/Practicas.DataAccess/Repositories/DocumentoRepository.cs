@@ -47,5 +47,16 @@ namespace Practicas.DataAccess.Repositories
             return await _context.Documentos.AnyAsync(d => d.Tipo == tipo && d.ProcesoId == procesoId);
         }
 
+        public async Task<Documento?>
+        GetHojaVidaByEstudianteIdAsync(
+        Guid estudianteId)
+        {
+            return await _context.Documentos
+                .Include(d => d.Proceso)
+                .FirstOrDefaultAsync(d =>
+                    d.Proceso.EstudianteId == estudianteId &&
+                    d.Tipo == TipoDocumento.Hoda_De_Vida);
+        }
+
     }
 }

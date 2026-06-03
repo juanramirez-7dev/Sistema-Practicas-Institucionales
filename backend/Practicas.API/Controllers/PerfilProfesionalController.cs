@@ -14,13 +14,16 @@ namespace Practicas.API.Controllers
     {
         private readonly IPerfilProfesionalService _perfilService;
         private readonly IEstudianteService _estudianteService;
+        private readonly IDocumentoService _documentoService;
 
         public PerfilProfesionalController(
             IPerfilProfesionalService perfilService,
-            IEstudianteService estudianteService)
+            IEstudianteService estudianteService,
+            IDocumentoService documentoService)
         {
             _perfilService = perfilService;
             _estudianteService = estudianteService;
+            _documentoService = documentoService;
         }
 
         [HttpGet]
@@ -70,6 +73,8 @@ namespace Practicas.API.Controllers
                 var perfil = await _perfilService
                     .GetByEstudianteIdAsync(estudianteId);
 
+                var hojaVida = await _documentoService.GetHojaVidaByEstudianteIdAsync(estudianteId);
+
                 return Ok(new PerfilProfesionalResponseDTO
                 {
                     Id = perfil.Id,
@@ -81,7 +86,9 @@ namespace Practicas.API.Controllers
                     Descripcion = perfil.Descripcion,
                     Habilidades = perfil.Habilidades,
                     Tecnologias = perfil.Tecnologias,
-                    UrlFoto = perfil.UrlFoto
+                    UrlFoto = perfil.UrlFoto,
+                    UrlHojaVida = hojaVida?.Url
+
                 });
             }
             catch (KeyNotFoundException ex)

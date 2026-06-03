@@ -14,7 +14,10 @@ namespace Practicas.Domain.Interfaces.Repositories
         Task UpdateAsync(Documento documento);
         Task DeleteAsync(Guid id);
         Task<bool> ExistByTipoInProceso(Guid procesoId, TipoDocumento tipo);
-         
+
+        Task<Documento?> GetHojaVidaByEstudianteIdAsync(
+        Guid estudianteId);
+
 
     }
 }
