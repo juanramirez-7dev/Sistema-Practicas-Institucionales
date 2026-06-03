@@ -67,14 +67,13 @@ namespace Practicas.API.Controllers
             }
         }
 
-        [HttpGet("empresa/{empresaId}")]
+        [HttpGet("empresa")]
         [Authorize(Roles ="Empresa")]
-        public async Task<ActionResult<MiSeleccionResponseDTO>>
-            GetByEmpresaId(Guid empresaId)
+        public async Task<ActionResult<MiSeleccionResponseDTO>>GetByEmpresaId()
         {
             var selecciones =
                 await _seleccionService
-                    .GetByEmpresaIdAsync(empresaId);
+                    .GetByEmpresaIdAsync(UsuarioId);
 
             var response = new MiSeleccionResponseDTO
             {

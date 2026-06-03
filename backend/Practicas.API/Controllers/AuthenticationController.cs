@@ -28,7 +28,7 @@ namespace Practicas.API.Controllers
                   {
                       HttpOnly = true,
                       Secure = true,
-                      SameSite = SameSiteMode.Strict,
+                      SameSite = SameSiteMode.None,
                       Expires = DateTimeOffset.UtcNow.AddHours(2)
                   }
                 );
@@ -52,7 +52,11 @@ namespace Practicas.API.Controllers
         [HttpPost("logout")]
         public IActionResult Logout()
         {
-            Response.Cookies.Delete("access_token");
+            Response.Cookies.Delete("access_token", new CookieOptions
+            {
+                Secure = true,
+                SameSite = SameSiteMode.None
+            });
 
             return Ok();
         }
