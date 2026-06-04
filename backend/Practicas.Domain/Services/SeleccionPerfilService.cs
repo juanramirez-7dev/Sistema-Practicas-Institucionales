@@ -1,4 +1,5 @@
-﻿using Practicas.Domain.Entities;
+﻿using Org.BouncyCastle.Asn1.Crmf;
+using Practicas.Domain.Entities;
 using Practicas.Domain.Events;
 using Practicas.Domain.Interfaces.Observer;
 using Practicas.Domain.Interfaces.Repositories;
@@ -92,7 +93,8 @@ namespace Practicas.Domain.Services
 
             await _unitOfWork.SaveChangesAsync();
 
-            return seleccion;
+            return await _repository.GetByEmpresaYEstudianteAsync(empresaId,estudianteId)
+            ?? throw new InvalidOperationException("No se pudo recuperar la selección creada.");
         }
 
         public async Task<IEnumerable<SeleccionPerfil>> GetByEmpresaIdAsync(Guid empresaId)

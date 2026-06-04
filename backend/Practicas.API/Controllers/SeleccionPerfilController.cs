@@ -29,13 +29,7 @@ namespace Practicas.API.Controllers
         {
             try
             {
-                var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(id, out var empresaId))
-                {
-                    throw new UnauthorizedAccessException($"Usuario con Id no valido");
-                }
-
-                var selecion = await _seleccionService.SeleccionarEstudianteAsync(empresaId, dto.EstudianteId);
+                var selecion = await _seleccionService.SeleccionarEstudianteAsync(UsuarioId, dto.EstudianteId);
                 var response = new SeleccionPerfilResponseDTO
                 {
                     SeleccionId = selecion.Id,
@@ -69,9 +63,9 @@ namespace Practicas.API.Controllers
 
         [HttpGet("empresa")]
         [Authorize(Roles ="Empresa")]
-        public async Task<ActionResult<MiSeleccionResponseDTO>> GetByEmpresaId(Guid empresaId)
+        public async Task<ActionResult<MiSeleccionResponseDTO>> GetByEmpresaId()
         {
-            var selecciones =await _seleccionService.GetByEmpresaIdAsync(empresaId);
+            var selecciones =await _seleccionService.GetByEmpresaIdAsync(UsuarioId);
 
             var response = new MiSeleccionResponseDTO
             {
@@ -104,14 +98,9 @@ namespace Practicas.API.Controllers
         {
             try
             {
-                var Id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(Id, out var estudianteId))
-                {
-                    throw new UnauthorizedAccessException($"Usuario con Id no valido");
-                }
                 var selecciones =
                     await _seleccionService
-                        .GetByEstudianteIdAsync(estudianteId);
+                        .GetByEstudianteIdAsync(UsuarioId);
 
                 var response =
                     new EmpresasInteresadasResponseDTO

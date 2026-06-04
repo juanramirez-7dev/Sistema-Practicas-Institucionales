@@ -48,12 +48,11 @@ namespace Practicas.DataAccess.Repositories
                 .ToListAsync();
         }
 
-        public async Task<SeleccionPerfil?>
-            GetByEmpresaYEstudianteAsync(
-                Guid empresaId,
-                Guid estudianteId)
+        public async Task<SeleccionPerfil?> GetByEmpresaYEstudianteAsync(Guid empresaId,Guid estudianteId)
         {
             return await _context.SeleccionesPerfil
+                .Include(s => s.Estudiante)
+                .ThenInclude(e => e.PerfilProfesional)
                 .FirstOrDefaultAsync(s =>
                     s.EmpresaId == empresaId &&
                     s.EstudianteId == estudianteId);

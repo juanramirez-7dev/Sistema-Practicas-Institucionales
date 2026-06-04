@@ -15,25 +15,35 @@ namespace Practicas.API.Controllers
         private readonly IPerfilProfesionalService _perfilService;
         private readonly IEstudianteService _estudianteService;
         private readonly IDocumentoService _documentoService;
+        private readonly ISeleccionPerfilService _seleccionPerfilService;
+        protected Guid usuarioId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         public PerfilProfesionalController(
             IPerfilProfesionalService perfilService,
             IEstudianteService estudianteService,
-            IDocumentoService documentoService)
+            IDocumentoService documentoService,
+            ISeleccionPerfilService seleccionPerfilService)
         {
             _perfilService = perfilService;
             _estudianteService = estudianteService;
             _documentoService = documentoService;
+            _seleccionPerfilService = seleccionPerfilService;
         }
 
         [HttpGet]
         [Authorize(Roles = "Empresa,Oficina")]
-        public async Task<ActionResult<PerfilesResponseDTO>> Buscar(
-        [FromQuery] string? textoBusqueda,
-        [FromQuery] string? carrera)
+        public async Task<ActionResult<PerfilesResponseDTO>> Buscar([FromQuery] string? textoBusqueda,[FromQuery] string? carrera)
         {
             var estudiantes = await _estudianteService
                 .BuscarPerfilesAsync(textoBusqueda, carrera);
+
+            var selecciones = await _seleccionPerfilService
+                .GetByEmpresaIdAsync(usuarioId);
+
+            var estudiantesSeleccionados = selecciones
+                .Where(s => s.Activo)
+                .Select(s => s.EstudianteId)
+                .ToHashSet();
 
             var response = new PerfilesResponseDTO
             {
@@ -48,8 +58,7 @@ namespace Practicas.API.Controllers
                         Habilidades = e.PerfilProfesional.Habilidades,
                         UrlFoto = e.PerfilProfesional.UrlFoto,
 
-                        // por ahora
-                        Seleccionado = false
+                        Seleccionado = estudiantesSeleccionados.Contains(e.Id)
                     })
             };
 
