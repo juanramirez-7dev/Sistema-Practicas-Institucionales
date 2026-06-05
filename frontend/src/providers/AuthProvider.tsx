@@ -31,6 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login =  async (credentials: Login) : Promise<void>  => {
     const data = await loginMutation.mutateAsync(credentials);
+    queryClient.setQueryData(["user"], data);
     const url = getUrlForRole(data.rol);
     navigate(url);
   };

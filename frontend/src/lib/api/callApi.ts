@@ -10,11 +10,16 @@ export async function callApi<T>(endpoint: string, options?: RequestInit): Promi
   });
 
   if (!response.ok) {
-    const errorData: ErrorResponse = await response.json();
-    throw new Error(errorData.message || 'Error en la solicitud');
+    const errorText = await response.text();
+    const errorData = errorText ? (JSON.parse(errorText) as ErrorResponse) : null;
+    throw new Error(errorData?.message || 'Error en la solicitud');
   }
 
-  const data: T = await response.json();
-  return data;
+  const responseText = await response.text();
+  if (!responseText) {
+    return undefined as unknown as T;
+  }
+
+  return JSON.parse(responseText) as T;
 
 }

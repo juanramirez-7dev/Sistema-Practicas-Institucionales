@@ -68,7 +68,7 @@ namespace Practicas.API.Controllers
 
         //perfil completo de un estudiante
         [HttpGet("estudiante")]
-        [Authorize(Roles = "Empresa,Oficina")]
+        [Authorize(Roles = "Empresa,Oficina,Estudiante")]
         public async Task<ActionResult<PerfilProfesionalResponseDTO>>
             GetByEstudianteId()
         {
@@ -82,7 +82,6 @@ namespace Practicas.API.Controllers
                 var perfil = await _perfilService
                     .GetByEstudianteIdAsync(estudianteId);
 
-                var hojaVida = await _documentoService.GetHojaVidaByEstudianteIdAsync(estudianteId);
 
                 return Ok(new PerfilProfesionalResponseDTO
                 {
@@ -95,8 +94,7 @@ namespace Practicas.API.Controllers
                     Descripcion = perfil.Descripcion,
                     Habilidades = perfil.Habilidades,
                     Tecnologias = perfil.Tecnologias,
-                    UrlFoto = perfil.UrlFoto,
-                    UrlHojaVida = hojaVida?.Url
+                    UrlFoto = perfil.UrlFoto
 
                 });
             }
@@ -117,6 +115,9 @@ namespace Practicas.API.Controllers
                 var perfil = await _perfilService
                     .GetByEstudianteIdAsync(estudianteId);
 
+                var hojaVida = await _documentoService.GetHojaVidaByEstudianteIdAsync(estudianteId);
+
+
                 return Ok(new PerfilProfesionalResponseDTO
                 {
                     Id = perfil.Id,
@@ -128,7 +129,8 @@ namespace Practicas.API.Controllers
                     Descripcion = perfil.Descripcion,
                     Habilidades = perfil.Habilidades,
                     Tecnologias = perfil.Tecnologias,
-                    UrlFoto = perfil.UrlFoto
+                    UrlFoto = perfil.UrlFoto,
+                    UrlHojaVida = hojaVida?.Url 
                 });
             }
             catch (KeyNotFoundException ex)

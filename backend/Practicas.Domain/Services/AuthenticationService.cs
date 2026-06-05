@@ -23,14 +23,6 @@ namespace Practicas.Domain.Services
 
         public async Task<(string Token, Guid UserId, string Role)> LoginAsync(string login, string password)
         {
-            try
-            {
-                var email = new MailAddress(login);
-            }
-            catch
-            {
-                throw new InvalidOperationException("El email no es válido");
-            }
             var usuario = await _usuarioRepository.GetByUserIdAndRolAsync(login);
             if (usuario == null)
             {

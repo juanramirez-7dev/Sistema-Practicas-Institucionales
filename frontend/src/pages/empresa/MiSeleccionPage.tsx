@@ -1,16 +1,43 @@
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   IconUser,
   IconMail,
   IconPhone,
-  IconDownload,
   IconUserCheck,
+  IconTrash,
+  IconAlertCircle,
 } from '@tabler/icons-react';
-import { getEstudiantesSeleccionados } from '../../lib/mockdata/empresa.ts';
-import { useAuth } from '../../hooks/useAuth.ts';
+import { perfilService } from '../../services/perfilService';
 
 export function MiSeleccionPage() {
-  const { user } = useAuth();
-  const estudiantesSeleccionados = getEstudiantesSeleccionados(user?.id || '');
+  const queryClient = useQueryClient();
+  const [errorMensaje, setErrorMensaje] = useState<string | null>(null);
+
+  const seleccionesQuery = useQuery({
+    queryKey: ['seleccionesEmpresa'],
+    queryFn: () => perfilService.getSeleccionPerfilEmpresa(),
+  });
+
+  const deleteMutation = useMutation<void, unknown, string>({
+    mutationFn: (seleccionId: string) => perfilService.deleteSeleccionPerfil(seleccionId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['seleccionesEmpresa'] });
+    },
+    onError: () => {
+      setErrorMensaje('No se pudo quitar la selección. Intenta nuevamente.');
+    },
+  });
+
+  const estudiantesSeleccionados = seleccionesQuery.data?.selecciones || [];
+  const totalSeleccionados = seleccionesQuery.data?.totalSeleccionados ?? estudiantesSeleccionados.length;
+  const isLoading = seleccionesQuery.isLoading;
+  const isError = seleccionesQuery.isError;
+
+  const handleQuitarSeleccion = async (seleccionId: string) => {
+    setErrorMensaje(null);
+    await deleteMutation.mutateAsync(seleccionId);
+  };
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -37,18 +64,41 @@ export function MiSeleccionPage() {
           <div>
             <p className="text-white/80 text-sm">Estudiantes seleccionados</p>
             <h2 className="text-white font-bold text-3xl">
-              {estudiantesSeleccionados.length}
+              {totalSeleccionados}
             </h2>
           </div>
         </div>
       </div>
 
-      {/* Lista de seleccionados */}
-      {estudiantesSeleccionados.length > 0 ? (
+      {isError && (
+        <div
+          className="p-6 rounded-2xl mb-6 flex items-start gap-4"
+          style={{ backgroundColor: 'var(--color-white)' }}
+        >
+          <IconAlertCircle size={24} style={{ color: 'var(--color-danger)' }} />
+          <div>
+            <p className="font-bold" style={{ color: 'var(--color-text)' }}>
+              No se pudieron cargar las selecciones.
+            </p>
+            <p style={{ color: 'var(--color-gray-medium)' }}>
+              {errorMensaje || 'Intenta actualizar la página.'}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {isLoading ? (
+        <div
+          className="p-12 rounded-2xl text-center"
+          style={{ backgroundColor: 'var(--color-white)' }}
+        >
+          <p style={{ color: 'var(--color-gray-medium)' }}>Cargando selecciones...</p>
+        </div>
+      ) : estudiantesSeleccionados.length > 0 ? (
         <div className="space-y-6">
           {estudiantesSeleccionados.map((estudiante) => (
             <div
-              key={estudiante.id}
+              key={estudiante.seleccionId}
               className="p-6 rounded-2xl border-2"
               style={{
                 backgroundColor: 'var(--color-white)',
@@ -56,11 +106,10 @@ export function MiSeleccionPage() {
               }}
             >
               <div className="flex flex-col md:flex-row gap-6">
-                {/* Foto */}
-                <div className="flex-shrink-0">
-                  {estudiante.foto ? (
+                <div className="shrink-0">
+                  {estudiante.urlFoto ? (
                     <img
-                      src={estudiante.foto}
+                      src={estudiante.urlFoto}
                       alt={estudiante.nombre}
                       className="w-24 h-24 rounded-full object-cover"
                     />
@@ -77,7 +126,6 @@ export function MiSeleccionPage() {
                   )}
                 </div>
 
-                {/* Información */}
                 <div className="flex-1">
                   <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
                     <div>
@@ -88,52 +136,29 @@ export function MiSeleccionPage() {
                         className="text-sm mt-1"
                         style={{ color: 'var(--color-gray-medium)' }}
                       >
-                        {estudiante.programa}
+                        {estudiante.carrera}
                       </p>
-                      <div className="flex gap-4 mt-2">
-                        <div>
-                          <p
-                            className="text-xs font-bold"
-                            style={{ color: 'var(--color-gray-medium)' }}
-                          >
-                            Semestre
-                          </p>
-                          <p
-                            className="font-bold"
-                            style={{ color: 'var(--color-text)' }}
-                          >
-                            {estudiante.semestre}
-                          </p>
-                        </div>
-                        <div>
-                          <p
-                            className="text-xs font-bold"
-                            style={{ color: 'var(--color-gray-medium)' }}
-                          >
-                            Promedio
-                          </p>
-                          <p
-                            className="font-bold"
-                            style={{ color: 'var(--color-text)' }}
-                          >
-                            {estudiante.promedio.toFixed(1)}
-                          </p>
-                        </div>
-                      </div>
+                      <p
+                        className="text-xs mt-2"
+                        style={{ color: 'var(--color-gray-medium)' }}
+                      >
+                        Seleccionado el {new Date(estudiante.fechaSeleccion).toLocaleDateString()}
+                      </p>
                     </div>
-                    <div
-                      className="px-4 py-2 rounded-lg flex items-center gap-2"
+                    <button
+                      onClick={() => handleQuitarSeleccion(estudiante.seleccionId)}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-bold transition-all hover:scale-105"
                       style={{
-                        backgroundColor: 'var(--color-success)',
+                        backgroundColor: 'var(--color-primary)',
                         color: 'white',
+                        border: '1px solid var(--color-primary)',
                       }}
                     >
-                      <IconUserCheck size={18} />
-                      <span className="font-bold text-sm">Seleccionado</span>
-                    </div>
+                      <IconTrash size={18} />
+                      Quitar selección
+                    </button>
                   </div>
 
-                  {/* Descripción */}
                   <p
                     className="mb-4"
                     style={{ color: 'var(--color-gray-medium)' }}
@@ -141,7 +166,6 @@ export function MiSeleccionPage() {
                     {estudiante.descripcion}
                   </p>
 
-                  {/* Habilidades */}
                   <div className="mb-4">
                     <p
                       className="text-xs font-bold mb-2"
@@ -150,7 +174,7 @@ export function MiSeleccionPage() {
                       Habilidades
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {estudiante.habilidades.map((habilidad) => (
+                      {estudiante.habilidades.split(',').map((habilidad) => (
                         <span
                           key={habilidad}
                           className="text-sm px-3 py-1 rounded"
@@ -159,37 +183,35 @@ export function MiSeleccionPage() {
                             color: 'white',
                           }}
                         >
-                          {habilidad}
+                          {habilidad.trim()}
                         </span>
                       ))}
                     </div>
                   </div>
 
-                  {/* Áreas de interés */}
                   <div className="mb-4">
                     <p
                       className="text-xs font-bold mb-2"
                       style={{ color: 'var(--color-gray-medium)' }}
                     >
-                      Áreas de Interés
+                      Tecnologías
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {estudiante.areasInteres.map((area) => (
+                      {estudiante.tecnologias.split(',').map((tech) => (
                         <span
-                          key={area}
+                          key={tech}
                           className="text-sm px-3 py-1 rounded"
                           style={{
                             backgroundColor: 'var(--color-primary)',
                             color: 'white',
                           }}
                         >
-                          {area}
+                          {tech.trim()}
                         </span>
                       ))}
                     </div>
                   </div>
 
-                  {/* Contacto y acciones */}
                   <div
                     className="p-4 rounded-xl"
                     style={{ backgroundColor: 'var(--color-gray-light)' }}
@@ -202,11 +224,11 @@ export function MiSeleccionPage() {
                             style={{ color: 'var(--color-secondary)' }}
                           />
                           <a
-                            href={`mailto:${estudiante.email}`}
+                            href={`mailto:${estudiante.correo}`}
                             className="text-sm hover:underline"
                             style={{ color: 'var(--color-text)' }}
                           >
-                            {estudiante.email}
+                            {estudiante.correo}
                           </a>
                         </div>
                         <div className="flex items-center gap-2">
@@ -223,21 +245,6 @@ export function MiSeleccionPage() {
                           </a>
                         </div>
                       </div>
-
-                      {estudiante.hojaVidaUrl && (
-                        <a
-                          href={estudiante.hojaVidaUrl}
-                          download
-                          className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold transition-all hover:scale-105"
-                          style={{
-                            backgroundColor: 'var(--color-primary)',
-                            color: 'white',
-                          }}
-                        >
-                          <IconDownload size={18} />
-                          Hoja de Vida
-                        </a>
-                      )}
                     </div>
                   </div>
                 </div>

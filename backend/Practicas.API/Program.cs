@@ -6,6 +6,7 @@ using Practicas.API.services;
 using Practicas.DataAccess.Context;
 using Practicas.DataAccess.ExternalServices;
 using Practicas.DataAccess.Repositories;
+using Practicas.DataAccess.Seeders;
 using Practicas.Domain.Interfaces.ExternalServices;
 using Practicas.Domain.Interfaces.Observer;
 using Practicas.Domain.Interfaces.Repositories;
@@ -141,6 +142,20 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// Seed de datos y migraciones
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider
+        .GetRequiredService<PracticasDbContext>();
+
+    var hasherService = scope.ServiceProvider
+        .GetRequiredService<IHasherService>();
+
+
+    await context.Database.MigrateAsync(); // Crea la BD + aplica migraciones
+    await DataSeeder.SeedAsync(context, hasherService);
+}
 
 if (app.Environment.IsDevelopment())
 {

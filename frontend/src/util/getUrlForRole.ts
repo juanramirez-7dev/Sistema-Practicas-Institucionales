@@ -2,13 +2,13 @@ import type { UserRole } from "../types/authTypes";
 
 export const getUrlForRole = (rol: UserRole): string => {
   switch (rol) {
-    case "estudiante":
+    case "Estudiante":
       return "/estudiante";
-    case "empresa":
+    case "Empresa":
       return "/empresa";
-    case "oficina": 
+    case "Oficina": 
       return "/oficina";
-    case "asesor":
+    case "Asesor":
       return "/asesor";
     default:
       return "/login";

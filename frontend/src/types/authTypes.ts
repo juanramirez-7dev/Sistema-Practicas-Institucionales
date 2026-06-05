@@ -1,4 +1,4 @@
-type UserRole = "estudiante" | "empresa" | "oficina" | "asesor";
+type UserRole = "Estudiante" | "Empresa" | "Oficina" | "Asesor";
 
 interface Login {
   login: string;

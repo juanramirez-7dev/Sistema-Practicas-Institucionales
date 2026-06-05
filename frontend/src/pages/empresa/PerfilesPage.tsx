@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   IconUser,
   IconSearch,
@@ -7,58 +9,119 @@ import {
   IconCheck,
   IconMail,
   IconPhone,
-  IconDownload,
   IconUserPlus,
   IconUserCheck,
+  IconAlertCircle,
+  IconEye
 } from '@tabler/icons-react';
-import {
-  ESTUDIANTES_DISPONIBLES,
-  PROGRAMAS_DISPONIBLES,
-  isEstudianteSeleccionado,
-  type EstudianteDisponible,
-} from '../../lib/mockdata/empresa.ts';
-import { useAuth } from '../../hooks/useAuth.ts';
+import { perfilService } from '../../services/perfilService';
+import type { PerfilDisponible } from '../../types/estudianteTypes';
+
+// TODO: Actualiza esta lista con las carreras disponibles del backend o datos maestros
+const CARRERAS_DISPONIBLES: string[] =  [
+  "Tecnologia en Electronica",
+  "Tecnologia en Telecomunicaciones",
+  "Tecnologia en Electromecanica",
+  "Tecnologia en Mantenimiento Biomedico",
+  "Tecnologia en Produccion",
+  "Ingenieria Electronica",
+  "Ingenieria de Telecomunicaciones",
+  "Ingenieria Electromecanica",
+  "Ingenieria Mecatronica",
+  "Ingenieria de Produccion"
+];
 
 export function PerfilesPage() {
-  const { user } = useAuth();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [programaFiltro, setProgramaFiltro] = useState('Todos');
-  const [selectedEstudiante, setSelectedEstudiante] =
-    useState<EstudianteDisponible | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [selectedEstudiante, setSelectedEstudiante] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [seleccionados, setSeleccionados] = useState<string[]>(
-    ESTUDIANTES_DISPONIBLES.filter((est) =>
-      isEstudianteSeleccionado(user?.id || '', est.id)
-    ).map((est) => est.id)
-  );
+  const [errorMensaje, setErrorMensaje] = useState<string | null>(null);
+  const [exitoMensaje, setExitoMensaje] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  // Filtrar estudiantes
-  const estudiantesFiltrados = ESTUDIANTES_DISPONIBLES.filter((estudiante) => {
-    const matchPrograma =
-      programaFiltro === 'Todos' || estudiante.programa === programaFiltro;
+  const searchTerm = searchParams.get('textoBusqueda') || '';
+  const carreraFiltro = searchParams.get('carrera') || 'Todos';
 
-    const matchSearch =
-      searchTerm === '' ||
-      estudiante.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      estudiante.habilidades.some((h) =>
-        h.toLowerCase().includes(searchTerm.toLowerCase())
-      ) ||
-      estudiante.areasInteres.some((a) =>
-        a.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+  // Limpiar mensajes después de 3 segundos
+  useEffect(() => {
+    if (errorMensaje) {
+      const timer = setTimeout(() => setErrorMensaje(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorMensaje]);
 
-    return matchPrograma && matchSearch;
+  useEffect(() => {
+    if (exitoMensaje) {
+      const timer = setTimeout(() => setExitoMensaje(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [exitoMensaje]);
+
+  const handleSearchChange = (value: string) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (value) {
+      newParams.set('textoBusqueda', value);
+    } else {
+      newParams.delete('textoBusqueda');
+    }
+    setSearchParams(newParams);
+  };
+
+  const handleCarreraChange = (value: string) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (value !== 'Todos') {
+      newParams.set('carrera', value);
+    } else {
+      newParams.delete('carrera');
+    }
+    setSearchParams(newParams);
+  };
+
+  const handleLimpiarFiltros = () => {
+    setSearchParams(new URLSearchParams());
+  };
+
+  const perfilesQuery = useQuery({
+    queryKey: ['perfilesDisponibles', searchTerm, carreraFiltro],
+    queryFn: () =>
+      perfilService.getPerfilesDisponibles(
+        searchTerm || undefined,
+        carreraFiltro !== 'Todos' ? carreraFiltro : undefined
+      ),
   });
 
-  const handleVerPerfil = (estudiante: EstudianteDisponible) => {
-    setSelectedEstudiante(estudiante);
+  const detalleQuery = useQuery({
+    queryKey: ['perfilDetalle', selectedEstudiante],
+    queryFn: () =>
+      selectedEstudiante
+        ? perfilService.getDetallePerfilEstudiante(selectedEstudiante)
+        : null,
+    enabled: !!selectedEstudiante,
+  });
+
+  const seleccionarMutation = useMutation({
+    mutationFn: (estudianteId: string) =>
+      perfilService.seleccionarPerfil({ EstudianteId: estudianteId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['perfilesDisponibles'] });
+      setExitoMensaje('¡Perfil seleccionado exitosamente!');
+    },
+    onError: (error) => {
+      const errorMsg =
+        error?.message ||
+        'Error al seleccionar el perfil. Intenta nuevamente.';
+      setErrorMensaje(errorMsg);
+    },
+  });
+
+  const handleVerPerfil = (estudiante: PerfilDisponible) => {
+    setSelectedEstudiante(estudiante.estudianteId);
     setShowModal(true);
   };
 
-  const handleSeleccionar = (estudianteId: string) => {
-    if (!seleccionados.includes(estudianteId)) {
-      setSeleccionados([...seleccionados, estudianteId]);
-    }
+  const handleSeleccionar = async (estudianteId: string) => {
+    setErrorMensaje(null);
+    await seleccionarMutation.mutateAsync(estudianteId);
   };
 
   const closeModal = () => {
@@ -66,8 +129,34 @@ export function PerfilesPage() {
     setSelectedEstudiante(null);
   };
 
+  const estudiantesFiltrados = perfilesQuery.data?.perfiles || [];
+  const isLoading = perfilesQuery.isLoading;
+  const isError = perfilesQuery.isError;
+
   return (
     <div className="max-w-7xl mx-auto">
+      {/* Mensaje de éxito */}
+      {exitoMensaje && (
+        <div
+          className="p-4 rounded-xl mb-6 flex items-center gap-2"
+          style={{ backgroundColor: '#DCFCE7', color: 'var(--color-success)' }}
+        >
+          <IconCheck size={20} />
+          <p>{exitoMensaje}</p>
+        </div>
+      )}
+
+      {/* Mensaje de error */}
+      {errorMensaje && (
+        <div
+          className="p-4 rounded-xl mb-6 flex items-center gap-2"
+          style={{ backgroundColor: '#FEE2E2', color: 'var(--color-error)' }}
+        >
+          <IconAlertCircle size={20} />
+          <p>{errorMensaje}</p>
+        </div>
+      )}
+      
       {/* Header */}
       <div className="mb-8">
         <h1 style={{ color: 'var(--color-primary)' }}>
@@ -102,7 +191,7 @@ export function PerfilesPage() {
               <input
                 type="text"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder="Ej: React, Python, Juan..."
                 className="w-full px-4 py-3 pl-12 rounded-xl border-2 focus:outline-none"
                 style={{
@@ -118,26 +207,26 @@ export function PerfilesPage() {
             </div>
           </div>
 
-          {/* Filtro por programa */}
+          {/* Filtro por carrera */}
           <div>
             <label
               className="block mb-2 text-sm font-bold"
               style={{ color: 'var(--color-gray-medium)' }}
             >
-              Filtrar por programa
+              Filtrar por carrera
             </label>
             <select
-              value={programaFiltro}
-              onChange={(e) => setProgramaFiltro(e.target.value)}
+              value={carreraFiltro}
+              onChange={(e) => handleCarreraChange(e.target.value)}
               className="w-full px-4 py-3 rounded-xl border-2 focus:outline-none"
               style={{
                 backgroundColor: 'var(--color-gray-light)',
                 borderColor: 'var(--color-border)',
               }}
             >
-              {PROGRAMAS_DISPONIBLES.map((programa) => (
-                <option key={programa} value={programa}>
-                  {programa}
+              {CARRERAS_DISPONIBLES.map((carrera) => (
+                <option key={carrera} value={carrera}>
+                  {carrera}
                 </option>
               ))}
             </select>
@@ -147,15 +236,17 @@ export function PerfilesPage() {
         {/* Contador de resultados */}
         <div className="mt-4 flex items-center justify-between">
           <p style={{ color: 'var(--color-gray-medium)' }}>
-            {estudiantesFiltrados.length}{' '}
-            {estudiantesFiltrados.length === 1 ? 'perfil encontrado' : 'perfiles encontrados'}
+            {isLoading
+              ? 'Cargando...'
+              : `${estudiantesFiltrados.length} ${
+                  estudiantesFiltrados.length === 1
+                    ? 'perfil encontrado'
+                    : 'perfiles encontrados'
+                }`}
           </p>
-          {(searchTerm !== '' || programaFiltro !== 'Todos') && (
+          {(searchTerm !== '' || carreraFiltro !== 'Todos') && (
             <button
-              onClick={() => {
-                setSearchTerm('');
-                setProgramaFiltro('Todos');
-              }}
+              onClick={handleLimpiarFiltros}
               className="text-sm flex items-center gap-2 hover:underline"
               style={{ color: 'var(--color-secondary)' }}
             >
@@ -166,28 +257,46 @@ export function PerfilesPage() {
         </div>
       </div>
 
+      {/* Estado de carga y error */}
+      {isError && (
+        <div
+          className="p-4 rounded-xl mb-6"
+          style={{ backgroundColor: '#FEE2E2', color: 'var(--color-error)' }}
+        >
+          <div className="flex items-center gap-2">
+            <IconAlertCircle size={20} />
+            <p>No se pudieron cargar los perfiles. Intenta nuevamente.</p>
+          </div>
+        </div>
+      )}
+
       {/* Lista de perfiles */}
-      {estudiantesFiltrados.length > 0 ? (
+      {isLoading ? (
+        <div
+          className="p-12 rounded-2xl text-center"
+          style={{ backgroundColor: 'var(--color-white)' }}
+        >
+          <p style={{ color: 'var(--color-gray-medium)' }}>Cargando perfiles...</p>
+        </div>
+      ) : estudiantesFiltrados.length > 0 ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {estudiantesFiltrados.map((estudiante) => {
-            const yaSeleccionado = seleccionados.includes(estudiante.id);
-
             return (
               <div
-                key={estudiante.id}
+                key={estudiante.estudianteId}
                 className="p-6 rounded-2xl border-2 flex flex-col"
                 style={{
                   backgroundColor: 'var(--color-white)',
-                  borderColor: yaSeleccionado
+                  borderColor: estudiante.seleccionado
                     ? 'var(--color-success)'
                     : 'var(--color-border)',
                 }}
               >
                 {/* Foto y nombre */}
                 <div className="text-center mb-4">
-                  {estudiante.foto ? (
+                  {estudiante.urlFoto ? (
                     <img
-                      src={estudiante.foto}
+                      src={estudiante.urlFoto}
                       alt={estudiante.nombre}
                       className="w-20 h-20 rounded-full object-cover mx-auto mb-3"
                     />
@@ -209,34 +318,8 @@ export function PerfilesPage() {
                     className="text-sm mt-1"
                     style={{ color: 'var(--color-gray-medium)' }}
                   >
-                    {estudiante.programa}
+                    {estudiante.carrera}
                   </p>
-                </div>
-
-                {/* Información académica */}
-                <div className="flex justify-around mb-4">
-                  <div className="text-center">
-                    <p
-                      className="text-xs font-bold"
-                      style={{ color: 'var(--color-gray-medium)' }}
-                    >
-                      Semestre
-                    </p>
-                    <p className="font-bold" style={{ color: 'var(--color-text)' }}>
-                      {estudiante.semestre}
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <p
-                      className="text-xs font-bold"
-                      style={{ color: 'var(--color-gray-medium)' }}
-                    >
-                      Promedio
-                    </p>
-                    <p className="font-bold" style={{ color: 'var(--color-text)' }}>
-                      {estudiante.promedio.toFixed(1)}
-                    </p>
-                  </div>
                 </div>
 
                 {/* Habilidades destacadas */}
@@ -245,22 +328,25 @@ export function PerfilesPage() {
                     className="text-xs font-bold mb-2"
                     style={{ color: 'var(--color-gray-medium)' }}
                   >
-                    Habilidades principales
+                    Habilidades
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {estudiante.habilidades.slice(0, 3).map((habilidad) => (
-                      <span
-                        key={habilidad}
-                        className="text-xs px-2 py-1 rounded"
-                        style={{
-                          backgroundColor: 'var(--color-secondary)',
-                          color: 'white',
-                        }}
-                      >
-                        {habilidad}
-                      </span>
-                    ))}
-                    {estudiante.habilidades.length > 3 && (
+                    {estudiante.habilidades
+                      .split(',')
+                      .slice(0, 3)
+                      .map((habilidad) => (
+                        <span
+                          key={habilidad.trim()}
+                          className="text-xs px-2 py-1 rounded"
+                          style={{
+                            backgroundColor: 'var(--color-secondary)',
+                            color: 'white',
+                          }}
+                        >
+                          {habilidad.trim()}
+                        </span>
+                      ))}
+                    {estudiante.habilidades.split(',').length > 3 && (
                       <span
                         className="text-xs px-2 py-1 rounded"
                         style={{
@@ -268,7 +354,7 @@ export function PerfilesPage() {
                           color: 'var(--color-gray-medium)',
                         }}
                       >
-                        +{estudiante.habilidades.length - 3}
+                        +{estudiante.habilidades.split(',').length - 3}
                       </span>
                     )}
                   </div>
@@ -287,17 +373,22 @@ export function PerfilesPage() {
                     Ver Perfil Completo
                   </button>
                   <button
-                    onClick={() => handleSeleccionar(estudiante.id)}
-                    disabled={yaSeleccionado}
-                    className="w-full px-4 py-2 rounded-xl font-bold transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    onClick={() => handleSeleccionar(estudiante.estudianteId)}
+                    disabled={estudiante.seleccionado || seleccionarMutation.isPending}
+                    className="w-full px-4 py-2 rounded-xl font-bold transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
                     style={{
-                      backgroundColor: yaSeleccionado
+                      backgroundColor: estudiante.seleccionado
                         ? 'var(--color-success)'
                         : 'var(--color-secondary)',
                       color: 'white',
                     }}
                   >
-                    {yaSeleccionado ? (
+                    {seleccionarMutation.isPending ? (
+                      <>
+                        
+                        Seleccionando...
+                      </>
+                    ) : estudiante.seleccionado ? (
                       <>
                         <IconUserCheck size={18} />
                         Seleccionado
@@ -337,7 +428,7 @@ export function PerfilesPage() {
       )}
 
       {/* Modal de perfil completo */}
-      {showModal && selectedEstudiante && (
+      {showModal && detalleQuery.data && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
           <div
             className="max-w-3xl w-full rounded-2xl p-8 my-8 relative max-h-[90vh] overflow-y-auto"
@@ -353,10 +444,10 @@ export function PerfilesPage() {
 
             {/* Header del modal */}
             <div className="text-center mb-6">
-              {selectedEstudiante.foto ? (
+              {detalleQuery.data.urlFoto ? (
                 <img
-                  src={selectedEstudiante.foto}
-                  alt={selectedEstudiante.nombre}
+                  src={detalleQuery.data.urlFoto}
+                  alt={detalleQuery.data.nombre}
                   className="w-32 h-32 rounded-full object-cover mx-auto mb-4"
                 />
               ) : (
@@ -368,42 +459,11 @@ export function PerfilesPage() {
                 </div>
               )}
               <h2 style={{ color: 'var(--color-primary)' }}>
-                {selectedEstudiante.nombre}
+                {detalleQuery.data.nombre}
               </h2>
               <p style={{ color: 'var(--color-gray-medium)' }}>
-                {selectedEstudiante.programa}
+                {detalleQuery.data.carrera}
               </p>
-            </div>
-
-            {/* Información académica */}
-            <div
-              className="p-4 rounded-xl mb-6"
-              style={{ backgroundColor: 'var(--color-gray-light)' }}
-            >
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p
-                    className="text-sm font-bold"
-                    style={{ color: 'var(--color-gray-medium)' }}
-                  >
-                    Semestre
-                  </p>
-                  <p style={{ color: 'var(--color-text)' }}>
-                    {selectedEstudiante.semestre}
-                  </p>
-                </div>
-                <div>
-                  <p
-                    className="text-sm font-bold"
-                    style={{ color: 'var(--color-gray-medium)' }}
-                  >
-                    Promedio
-                  </p>
-                  <p style={{ color: 'var(--color-text)' }}>
-                    {selectedEstudiante.promedio.toFixed(1)}
-                  </p>
-                </div>
-              </div>
             </div>
 
             {/* Descripción */}
@@ -412,55 +472,63 @@ export function PerfilesPage() {
                 Sobre mí
               </h3>
               <p style={{ color: 'var(--color-gray-medium)' }}>
-                {selectedEstudiante.descripcion}
+                {detalleQuery.data.descripcion}
               </p>
             </div>
 
             {/* Habilidades */}
-            <div className="mb-6">
-              <h3 className="mb-3" style={{ color: 'var(--color-text)' }}>
-                Habilidades Técnicas
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {selectedEstudiante.habilidades.map((habilidad) => (
-                  <span
-                    key={habilidad}
-                    className="px-3 py-2 rounded-lg font-medium"
-                    style={{
-                      backgroundColor: 'var(--color-secondary)',
-                      color: 'white',
-                    }}
-                  >
-                    {habilidad}
-                  </span>
-                ))}
+            {detalleQuery.data.habilidades && (
+              <div className="mb-6">
+                <h3 className="mb-3" style={{ color: 'var(--color-text)' }}>
+                  Habilidades Técnicas
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {detalleQuery.data.habilidades
+                    .split(',')
+                    .map((habilidad) => (
+                      <span
+                        key={habilidad.trim()}
+                        className="px-3 py-2 rounded-lg font-medium"
+                        style={{
+                          backgroundColor: 'var(--color-secondary)',
+                          color: 'white',
+                        }}
+                      >
+                        {habilidad.trim()}
+                      </span>
+                    ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Áreas de interés */}
-            <div className="mb-6">
-              <h3 className="mb-3" style={{ color: 'var(--color-text)' }}>
-                Áreas de Interés
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {selectedEstudiante.areasInteres.map((area) => (
-                  <span
-                    key={area}
-                    className="px-3 py-2 rounded-lg font-medium"
-                    style={{
-                      backgroundColor: 'var(--color-primary)',
-                      color: 'white',
-                    }}
-                  >
-                    {area}
-                  </span>
-                ))}
+            {/* Tecnologías */}
+            {detalleQuery.data.tecnologias && (
+              <div className="mb-6">
+                <h3 className="mb-3" style={{ color: 'var(--color-text)' }}>
+                  Tecnologías
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {detalleQuery.data.tecnologias
+                    .split(',')
+                    .map((tecnologia) => (
+                      <span
+                        key={tecnologia.trim()}
+                        className="px-3 py-2 rounded-lg font-medium"
+                        style={{
+                          backgroundColor: 'var(--color-primary)',
+                          color: 'white',
+                        }}
+                      >
+                        {tecnologia.trim()}
+                      </span>
+                    ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Datos de contacto */}
             <div
-              className="p-4 rounded-xl mb-6"
+              className="p-4 rounded-xl"
               style={{ backgroundColor: 'var(--color-gray-light)' }}
             >
               <h3 className="mb-3" style={{ color: 'var(--color-text)' }}>
@@ -470,71 +538,54 @@ export function PerfilesPage() {
                 <div className="flex items-center gap-2">
                   <IconMail size={18} style={{ color: 'var(--color-secondary)' }} />
                   <a
-                    href={`mailto:${selectedEstudiante.email}`}
+                    href={`mailto:${detalleQuery.data.correo}`}
                     className="hover:underline"
                     style={{ color: 'var(--color-text)' }}
                   >
-                    {selectedEstudiante.email}
+                    {detalleQuery.data.correo}
                   </a>
                 </div>
                 <div className="flex items-center gap-2">
                   <IconPhone size={18} style={{ color: 'var(--color-secondary)' }} />
                   <a
-                    href={`tel:${selectedEstudiante.telefono}`}
+                    href={`tel:${detalleQuery.data.telefono}`}
                     className="hover:underline"
                     style={{ color: 'var(--color-text)' }}
                   >
-                    {selectedEstudiante.telefono}
+                    {detalleQuery.data.telefono}
                   </a>
                 </div>
+                {detalleQuery.data.urlHojaVida && (
+                  <div className="mt-4">
+                    <a
+                      href={detalleQuery.data.urlHojaVida}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-bold transition-all hover:scale-105"
+                      style={{
+                        backgroundColor: 'var(--color-primary)',
+                        color: 'white',
+                      }}
+                    >
+                      <IconEye size={18} />
+                      Ver Hoja de Vida
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
+          </div>
+        </div>
+      )}
 
-            {/* Hoja de vida */}
-            {selectedEstudiante.hojaVidaUrl && (
-              <div className="mb-6">
-                <a
-                  href={selectedEstudiante.hojaVidaUrl}
-                  download
-                  className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold transition-all hover:scale-[1.02]"
-                  style={{
-                    backgroundColor: 'var(--color-primary)',
-                    color: 'white',
-                  }}
-                >
-                  <IconDownload size={20} />
-                  Descargar Hoja de Vida
-                </a>
-              </div>
-            )}
-
-            {/* Botón de selección */}
-            <button
-              onClick={() => {
-                handleSeleccionar(selectedEstudiante.id);
-                closeModal();
-              }}
-              disabled={seleccionados.includes(selectedEstudiante.id)}
-              className="w-full px-6 py-3 rounded-xl font-bold transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              style={{
-                backgroundColor: seleccionados.includes(selectedEstudiante.id)
-                  ? 'var(--color-success)'
-                  : 'var(--color-secondary)',
-                color: 'white',
-              }}
-            >
-              {seleccionados.includes(selectedEstudiante.id) ? (
-                <>
-                  <IconCheck size={20} />
-                  Ya Seleccionado
-                </>
-              ) : (
-                <>
-                  <IconUserPlus size={20} />
-                  Seleccionar Estudiante
-                </>
-              )}
-            </button>
+      {/* Modal de carga del detalle */}
+      {showModal && detalleQuery.isLoading && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div
+            className="p-8 rounded-2xl"
+            style={{ backgroundColor: 'var(--color-white)' }}
+          >
+            <p style={{ color: 'var(--color-gray-medium)' }}>Cargando detalles...</p>
           </div>
         </div>
       )}

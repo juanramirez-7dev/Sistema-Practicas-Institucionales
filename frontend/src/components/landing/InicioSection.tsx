@@ -5,74 +5,92 @@ import {
   IconX,
   IconAlertCircle,
   IconRocket,
+  IconLoader,
 } from '@tabler/icons-react';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
-// Mock data para simular la base de datos de estudiantes
-const MOCK_STUDENTS = {
-  '1234567890': {
-    nombre: 'Juan Pérez García',
-    cumpleRequisitos: true,
-    requisitos: {
-      creditosAprobados: { cumple: true, valor: 120, minimo: 100 },
-      promedioMinimo: { cumple: true, valor: 3.8, minimo: 3.5 },
-      documentosAlDia: { cumple: true },
-    },
-    tieneProcesoActivo: false,
-  },
-  '9876543210': {
-    nombre: 'María González López',
-    cumpleRequisitos: false,
-    requisitos: {
-      creditosAprobados: { cumple: false, valor: 85, minimo: 100 },
-      promedioMinimo: { cumple: true, valor: 4.0, minimo: 3.5 },
-      documentosAlDia: { cumple: false },
-    },
-    tieneProcesoActivo: false,
-  },
-  '5555555555': {
-    nombre: 'Carlos Rodríguez Sánchez',
-    cumpleRequisitos: true,
-    requisitos: {
-      creditosAprobados: { cumple: true, valor: 110, minimo: 100 },
-      promedioMinimo: { cumple: true, valor: 3.9, minimo: 3.5 },
-      documentosAlDia: { cumple: true },
-    },
-    tieneProcesoActivo: true,
-  },
-};
+import { estudianteService } from '../../services/estudianteService';
+import type {
+  UsuarioResponse,
+  ValidateCreditsResponse,
+} from '../../types/estudianteTypes';
 
 type ConsultaStatus = 'idle' | 'notFound' | 'found' | 'processCreated';
 
 export function InicioSection() {
   const [documento, setDocumento] = useState('');
   const [status, setStatus] = useState<ConsultaStatus>('idle');
-  const [studentData, setStudentData] = useState<
-    (typeof MOCK_STUDENTS)[keyof typeof MOCK_STUDENTS] | null
-  >(null);
+  const [validationData, setValidationData] = useState<ValidateCreditsResponse | null>(null);
+  const [createdUser, setCreatedUser] = useState<UsuarioResponse | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleConsulta = (e: React.FormEvent) => {
+  const validationQuery = useQuery<ValidateCreditsResponse, Error>({
+    queryKey: ['estudiante', documento],
+    queryFn: () => estudianteService.validateCredits(documento),
+    enabled: false,
+  });
+
+  const startProcessMutation = useMutation<UsuarioResponse, Error, string>({
+    mutationFn: (documento) => estudianteService.startProcess(documento),
+    onSuccess: (data) => {
+      setCreatedUser(data);
+      setStatus('processCreated');
+      setErrorMessage(null);
+    },
+    onError: (error) => {
+      setErrorMessage(error.message || 'No se pudo iniciar el proceso.');
+    },
+  });
+
+  const handleConsulta = async (e: React.FormEvent) => {
     e.preventDefault();
+    setStatus('idle');
+    setErrorMessage(null);
+    setCreatedUser(null);
 
-    // Simular consulta a la base de datos
-    const student = MOCK_STUDENTS[documento as keyof typeof MOCK_STUDENTS];
-
-    if (!student) {
-      setStatus('notFound');
-      setStudentData(null);
-    } else {
-      setStatus('found');
-      setStudentData(student);
+    if (!documento.trim()) {
+      setErrorMessage('Ingresa un número de documento válido.');
+      return;
     }
+
+    const result = await validationQuery.refetch();
+
+    if (result.data) {
+      setValidationData(result.data);
+      setStatus('found');
+      return;
+    }
+
+    const message = result.error?.message.toLowerCase() || '';
+    if (message.includes('no encontrado') || message.includes('not found')) {
+      setStatus('notFound');
+      setValidationData(null);
+      return;
+    }
+
+    setValidationData(null);
+    setErrorMessage(result.error?.message || 'No se pudo consultar el documento.');
   };
 
-  const handleIniciarProceso = () => {
-    setStatus('processCreated');
+  const handleIniciarProceso = async () => {
+    if (!validationData?.meetsRequirement) return;
+    setErrorMessage(null);
+    setIsSubmitting(true);
+
+    try {
+      await startProcessMutation.mutateAsync(documento);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const resetForm = () => {
     setDocumento('');
     setStatus('idle');
-    setStudentData(null);
+    setValidationData(null);
+    setCreatedUser(null);
+    setErrorMessage(null);
   };
 
   return (
@@ -82,35 +100,20 @@ export function InicioSection() {
       style={{ backgroundColor: 'var(--color-gray-light)' }}
     >
       <div className="max-w-4xl mx-auto">
-        {/* Título y descripción */}
         <div className="text-center mb-12">
-          <h1
-            className="mb-4"
-            style={{ color: 'var(--color-primary)' }}
-          >
+          <h1 className="mb-4" style={{ color: 'var(--color-primary)' }}>
             Sistema de Gestión de Prácticas Profesionales
           </h1>
-          <p
-            className="text-lg max-w-2xl mx-auto"
-            style={{ color: 'var(--color-gray-medium)' }}
-          >
+          <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--color-gray-medium)' }}>
             Consulta si cumples los requisitos mínimos para iniciar tu proceso
             de prácticas profesionales en el ITM
           </p>
         </div>
 
-        {/* Formulario de consulta */}
-        <div
-          className="rounded-2xl p-8 shadow-lg"
-          style={{ backgroundColor: 'var(--color-white)' }}
-        >
+        <div className="rounded-2xl p-8 shadow-lg" style={{ backgroundColor: 'var(--color-white)' }}>
           <form onSubmit={handleConsulta} className="space-y-6">
             <div>
-              <label
-                htmlFor="documento"
-                className="block mb-2"
-                style={{ color: 'var(--color-text)' }}
-              >
+              <label htmlFor="documento" className="block mb-2" style={{ color: 'var(--color-text)' }}>
                 Número de Documento de Identidad
               </label>
               <div className="relative">
@@ -127,41 +130,42 @@ export function InicioSection() {
                   }}
                   required
                 />
-                <IconSearch
-                  className="absolute right-4 top-1/2 -translate-y-1/2"
-                  size={20}
-                  style={{ color: 'var(--color-gray-medium)' }}
-                />
+                <IconSearch className="absolute right-4 top-1/2 -translate-y-1/2" size={20} style={{ color: 'var(--color-gray-medium)' }} />
               </div>
             </div>
 
             <button
               type="submit"
-              className="w-full px-6 py-3 rounded-xl text-white font-bold transition-all hover:scale-[1.02] hover:shadow-lg"
+              disabled={validationQuery.isFetching}
+              className="w-full px-6 py-3 rounded-xl text-white font-bold transition-all hover:scale-[1.02] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: 'var(--color-secondary)' }}
             >
-              Consultar Elegibilidad
+              {validationQuery.isFetching ? (
+                <span className="flex items-center justify-center gap-2">
+                  <IconLoader className="animate-spin" size={18} />
+                  Consultando...
+                </span>
+              ) : (
+                'Consultar Elegibilidad'
+              )}
             </button>
           </form>
 
-          {/* Resultados */}
+          {errorMessage && (
+            <div className="mt-6 p-4 rounded-xl flex items-start gap-3" style={{ backgroundColor: 'var(--color-error)', color: 'white' }}>
+              <IconAlertCircle size={20} className="shrink-0 mt-0.5" />
+              <p className="text-sm">{errorMessage}</p>
+            </div>
+          )}
+
           {status === 'notFound' && (
-            <div
-              className="mt-6 p-6 rounded-xl border-2"
-              style={{
-                backgroundColor: 'var(--color-error)',
-                borderColor: 'var(--color-error)',
-              }}
-            >
+            <div className="mt-6 p-6 rounded-xl border-2" style={{ backgroundColor: 'var(--color-error)', borderColor: 'var(--color-error)' }}>
               <div className="flex items-start gap-3">
-                <IconAlertCircle className="text-white flex-shrink-0" size={24} />
+                <IconAlertCircle className="text-white shrink-0" size={24} />
                 <div>
-                  <h3 className="text-white font-bold mb-2">
-                    Documento no encontrado
-                  </h3>
+                  <h3 className="text-white font-bold mb-2">Documento no encontrado</h3>
                   <p className="text-white/90">
-                    No existe información asociada al número de documento
-                    ingresado. Por favor verifica e intenta nuevamente.
+                    No existe información asociada al número de documento ingresado. Por favor verifica e intenta nuevamente.
                   </p>
                   <button
                     onClick={resetForm}
@@ -175,105 +179,67 @@ export function InicioSection() {
             </div>
           )}
 
-          {status === 'found' && studentData && (
+          {status === 'found' && validationData && (
             <div className="mt-6 space-y-4">
-              {/* Información del estudiante */}
-              <div
-                className="p-6 rounded-xl"
-                style={{ backgroundColor: 'var(--color-gray-light)' }}
-              >
-                <h3
-                  className="font-bold mb-2"
-                  style={{ color: 'var(--color-primary)' }}
-                >
-                  Estudiante: {studentData.nombre}
+              <div className="p-6 rounded-xl" style={{ backgroundColor: 'var(--color-gray-light)' }}>
+                <h3 className="font-bold mb-2" style={{ color: 'var(--color-primary)' }}>
+                  Documento: {documento}
                 </h3>
                 <p style={{ color: 'var(--color-gray-medium)' }}>
-                  Documento: {documento}
+                  Resultado de elegibilidad de créditos
                 </p>
               </div>
 
-              {/* Estado de requisitos */}
-              <div
-                className="p-6 rounded-xl border-2"
-                style={{
-                  backgroundColor: studentData.cumpleRequisitos
-                    ? 'var(--color-success)'
-                    : 'var(--color-warning)',
-                  borderColor: studentData.cumpleRequisitos
-                    ? 'var(--color-success)'
-                    : 'var(--color-warning)',
-                }}
-              >
+              <div className="p-6 rounded-xl border-2" style={{ backgroundColor: validationData.meetsRequirement ? 'var(--color-success)' : 'var(--color-warning)', borderColor: validationData.meetsRequirement ? 'var(--color-success)' : 'var(--color-warning)' }}>
                 <div className="flex items-start gap-3">
-                  {studentData.cumpleRequisitos ? (
-                    <IconCheck className="text-white flex-shrink-0" size={28} />
+                  {validationData.meetsRequirement ? (
+                    <IconCheck className="text-white shrink-0" size={28} />
                   ) : (
-                    <IconX className="text-white flex-shrink-0" size={28} />
+                    <IconX className="text-white shrink-0" size={28} />
                   )}
                   <div className="flex-1">
                     <h3 className="text-white font-bold mb-3">
-                      {studentData.cumpleRequisitos
-                        ? '¡Felicitaciones! Cumples los requisitos mínimos'
-                        : 'No cumples los requisitos mínimos'}
+                      {validationData.meetsRequirement
+                        ? '¡Cumples con los créditos necesarios para iniciar el proceso!'
+                        : 'No cumples con los créditos necesarios para iniciar el proceso'}
                     </h3>
 
-                    {/* Detalle de requisitos */}
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-white">
-                        {studentData.requisitos.creditosAprobados.cumple ? (
-                          <IconCheck size={18} />
-                        ) : (
-                          <IconX size={18} />
-                        )}
-                        <span className="text-sm">
-                          Créditos aprobados: {studentData.requisitos.creditosAprobados.valor}/
-                          {studentData.requisitos.creditosAprobados.minimo}
-                        </span>
+                    <div className="space-y-3 text-white">
+                      <div>
+                        <p className="text-sm text-white/80">Créditos aprobados</p>
+                        <p className="text-lg font-bold">{validationData.approvedCredits}</p>
                       </div>
-                      <div className="flex items-center gap-2 text-white">
-                        {studentData.requisitos.promedioMinimo.cumple ? (
-                          <IconCheck size={18} />
-                        ) : (
-                          <IconX size={18} />
-                        )}
-                        <span className="text-sm">
-                          Promedio mínimo: {studentData.requisitos.promedioMinimo.valor}/
-                          {studentData.requisitos.promedioMinimo.minimo}
-                        </span>
+                      <div>
+                        <p className="text-sm text-white/80">Créditos requeridos</p>
+                        <p className="text-lg font-bold">{validationData.requiredCredits}</p>
                       </div>
-                      <div className="flex items-center gap-2 text-white">
-                        {studentData.requisitos.documentosAlDia.cumple ? (
-                          <IconCheck size={18} />
-                        ) : (
-                          <IconX size={18} />
-                        )}
-                        <span className="text-sm">Documentos al día</span>
-                      </div>
+                      {!validationData.meetsRequirement && (
+                        <div>
+                          <p className="text-sm text-white/80">Créditos faltantes</p>
+                          <p className="text-lg font-bold">{validationData.missingCredits}</p>
+                        </div>
+                      )}
                     </div>
 
-                    {/* Botón de acción */}
-                    {studentData.cumpleRequisitos && !studentData.tieneProcesoActivo && (
+                    {validationData.meetsRequirement && (
                       <button
                         onClick={handleIniciarProceso}
-                        className="mt-4 px-6 py-3 bg-white rounded-xl font-bold flex items-center gap-2 hover:scale-105 transition-all"
+                        disabled={isSubmitting}
+                        className="mt-4 px-6 py-3 bg-white rounded-xl font-bold flex items-center gap-2 hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         style={{ color: 'var(--color-secondary)' }}
                       >
-                        <IconRocket size={20} />
-                        Iniciar Proceso
+                        {isSubmitting ? (
+                          <>
+                            <IconLoader className="animate-spin" size={18} />
+                            Iniciando proceso...
+                          </>
+                        ) : (
+                          <>
+                            <IconRocket size={20} />
+                            Iniciar Proceso
+                          </>
+                        )}
                       </button>
-                    )}
-
-                    {studentData.tieneProcesoActivo && (
-                      <div className="mt-4 p-4 bg-white/20 rounded-xl text-white">
-                        <p className="font-bold">
-                          Ya tienes un proceso activo
-                        </p>
-                        <p className="text-sm mt-1">
-                          Ya cuentas con una solicitud en curso. No es necesario
-                          iniciar un nuevo proceso.
-                        </p>
-                      </div>
                     )}
                   </div>
                 </div>
@@ -293,31 +259,20 @@ export function InicioSection() {
             </div>
           )}
 
-          {status === 'processCreated' && (
-            <div
-              className="mt-6 p-6 rounded-xl border-2"
-              style={{
-                backgroundColor: 'var(--color-success)',
-                borderColor: 'var(--color-success)',
-              }}
-            >
+          {status === 'processCreated' && createdUser && (
+            <div className="mt-6 p-6 rounded-xl border-2" style={{ backgroundColor: 'var(--color-success)', borderColor: 'var(--color-success)' }}>
               <div className="flex items-start gap-3">
-                <IconCheck className="text-white flex-shrink-0" size={28} />
+                <IconCheck className="text-white shrink-0" size={28} />
                 <div>
-                  <h3 className="text-white font-bold mb-2">
-                    ¡Proceso iniciado exitosamente!
-                  </h3>
+                  <h3 className="text-white font-bold mb-2">¡Proceso iniciado exitosamente!</h3>
                   <p className="text-white/90 mb-4">
-                    Tu cuenta ha sido activada. Ahora puedes ingresar al sistema
-                    con las siguientes credenciales:
+                    Tu proceso de prácticas ha sido registrado correctamente. Ya puedes iniciar sesión con tu correo institucional y tu documento de identidad.
                   </p>
-                  <div className="bg-white/20 p-4 rounded-lg space-y-2 text-white">
-                    <p className="text-sm">
-                      <strong>Correo institucional:</strong> {studentData?.nombre.toLowerCase().replace(/ /g, '.')}@itm.edu.co
-                    </p>
-                    <p className="text-sm">
-                      <strong>Contraseña:</strong> {documento}
-                    </p>
+                  <div className="space-y-3 text-white/90">
+                    <p><strong className="text-white">Nombre:</strong> {createdUser.nombre}</p>
+                    <p><strong className="text-white">Documento:</strong> {createdUser.documentoIdentidad}</p>
+                    <p><strong className="text-white">Correo:</strong> {createdUser.correo}</p>
+                    <p><strong className="text-white">Créditos aprobados:</strong> {createdUser.creditosAprobados}</p>
                   </div>
                   <button
                     onClick={resetForm}
@@ -330,19 +285,6 @@ export function InicioSection() {
               </div>
             </div>
           )}
-        </div>
-
-        {/* Ayuda */}
-        <div className="mt-8 text-center">
-          <p style={{ color: 'var(--color-gray-medium)' }}>
-            Ejemplos de documentos para probar:
-            <span className="font-bold mx-2">1234567890</span>
-            (cumple requisitos),
-            <span className="font-bold mx-2">9876543210</span>
-            (no cumple),
-            <span className="font-bold mx-2">5555555555</span>
-            (proceso activo)
-          </p>
         </div>
       </div>
     </section>

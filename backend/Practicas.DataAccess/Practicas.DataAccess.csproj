@@ -19,8 +19,4 @@
     <ProjectReference Include="..\Practicas.Domain\Practicas.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Seeders\" />
-  </ItemGroup>
-
 </Project>

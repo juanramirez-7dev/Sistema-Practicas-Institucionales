@@ -25,7 +25,7 @@ namespace Practicas.API.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Empresa")]
-        public async Task<ActionResult<SeleccionPerfilResponseDTO>> SeleccionarEstudiante(SeleccionPerfilRequestDTO dto)
+        public async Task<ActionResult> SeleccionarEstudiante(SeleccionPerfilRequestDTO dto)
         {
             try
             {
@@ -45,7 +45,7 @@ namespace Practicas.API.Controllers
                     FechaSeleccion = selecion.FechaSeleccion
                 };
 
-                return Ok(response);
+                return Ok();
             }
             catch (KeyNotFoundException ex)
             {

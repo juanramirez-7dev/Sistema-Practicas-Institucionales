@@ -28,8 +28,32 @@ namespace Practicas.API.Controllers
         {
             try
             {
-                Console.WriteLine($"Id del estudiante: {EstudianteId}");
                 var documentos = await _documentoService.GetByEstudianteIdAsync(EstudianteId);
+                return Ok(documentos.Select(d => new DocumentoResponseDto
+                {
+                    Id = d.Id,
+                    Estado = d.Estado,
+                    Tipo = d.Tipo,
+                    Observacion = d.Observacion,
+                    FechaCarga = d.FechaCarga,
+                    Url = d.Url,
+                    ProcesoId = d.ProcesoId
+                }).ToList());
+
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+        }
+
+        [HttpGet("proceso/{id}")]
+        [Authorize(Roles = "Oficina")]
+        public async Task<ActionResult<IEnumerable<DocumentoResponseDto>>> GetByProceso(Guid id)
+        {
+            try
+            {
+                var documentos = await _documentoService.GetByEstudianteIdAsync(id);
                 return Ok(documentos.Select(d => new DocumentoResponseDto
                 {
                     Id = d.Id,

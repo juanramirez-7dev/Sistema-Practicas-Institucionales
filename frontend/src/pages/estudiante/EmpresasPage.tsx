@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query';
 import {
   IconBuildingSkyscraper,
   IconMail,
@@ -5,7 +6,9 @@ import {
   IconCalendar,
   IconInfoCircle,
 } from '@tabler/icons-react';
-import { EMPRESAS_INTERESADAS } from '../../lib/mockdata/estudiante.ts';
+
+import { estudianteService } from '../../services/estudianteService';
+import type { SeleccionPerfilResponse } from '../../types/estudianteTypes';
 
 export function EmpresasPage() {
   const formatDate = (dateString: string) => {
@@ -16,6 +19,31 @@ export function EmpresasPage() {
       day: 'numeric',
     });
   };
+
+  const { data, isLoading, isError, error } = useQuery<SeleccionPerfilResponse, Error>({
+    queryKey: ['seleccionPerfilEstudiante'],
+    queryFn: estudianteService.getSeleccionPerfil,
+  });
+
+  const total = data?.totalEmpresasInteresadas ?? 0;
+  const empresas = data?.empresas ?? [];
+
+  if (isLoading) {
+    return (
+      <div className="max-w-6xl mx-auto p-8 text-center" style={{ color: 'var(--color-gray-medium)' }}>
+        Cargando empresas seleccionadas...
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="max-w-6xl mx-auto p-8 rounded-2xl" style={{ backgroundColor: 'var(--color-white)' }}>
+        <p style={{ color: 'var(--color-error)' }}>No se pudo cargar las empresas seleccionadas.</p>
+        <p style={{ color: 'var(--color-gray-medium)' }}>{error?.message}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -45,18 +73,18 @@ export function EmpresasPage() {
           <div>
             <p className="text-white/80 text-sm">Total de empresas interesadas</p>
             <h2 className="text-white font-bold text-3xl">
-              {EMPRESAS_INTERESADAS.length}
+              {total}
             </h2>
           </div>
         </div>
       </div>
 
       {/* Lista de empresas */}
-      {EMPRESAS_INTERESADAS.length > 0 ? (
+      {empresas.length > 0 ? (
         <div className="space-y-6">
-          {EMPRESAS_INTERESADAS.map((empresa) => (
+          {empresas.map((empresa) => (
             <div
-              key={empresa.id}
+              key={empresa.seleccionId}
               className="p-6 rounded-2xl border-2"
               style={{
                 backgroundColor: 'var(--color-white)',
@@ -77,7 +105,7 @@ export function EmpresasPage() {
                   <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
                     <div>
                       <h2 style={{ color: 'var(--color-primary)' }}>
-                        {empresa.nombre}
+                        {empresa.razonSocial}
                       </h2>
                       <p
                         className="text-sm mt-1"
@@ -92,17 +120,10 @@ export function EmpresasPage() {
                         style={{ color: 'var(--color-gray-medium)' }}
                       />
                       <span style={{ color: 'var(--color-gray-medium)' }}>
-                        Interesada desde {formatDate(empresa.fechaInteres)}
+                        Interesada desde {formatDate(empresa.fechaSeleccion)}
                       </span>
                     </div>
                   </div>
-
-                  <p
-                    className="mb-6"
-                    style={{ color: 'var(--color-gray-medium)' }}
-                  >
-                    {empresa.descripcion}
-                  </p>
 
                   {/* Información de contacto */}
                   <div
@@ -122,26 +143,15 @@ export function EmpresasPage() {
                           className="text-xs font-bold mb-1"
                           style={{ color: 'var(--color-gray-medium)' }}
                         >
-                          Contacto
-                        </p>
-                        <p style={{ color: 'var(--color-text)' }}>
-                          {empresa.contacto.nombre}
-                        </p>
-                      </div>
-                      <div>
-                        <p
-                          className="text-xs font-bold mb-1"
-                          style={{ color: 'var(--color-gray-medium)' }}
-                        >
                           Email
                         </p>
                         <a
-                          href={`mailto:${empresa.contacto.email}`}
+                          href={`mailto:${empresa.correo}`}
                           className="flex items-center gap-2 hover:underline"
                           style={{ color: 'var(--color-secondary)' }}
                         >
                           <IconMail size={16} />
-                          {empresa.contacto.email}
+                          {empresa.correo}
                         </a>
                       </div>
                       <div>
@@ -152,12 +162,12 @@ export function EmpresasPage() {
                           Teléfono
                         </p>
                         <a
-                          href={`tel:${empresa.contacto.telefono}`}
+                          href={`tel:${empresa.telefono}`}
                           className="flex items-center gap-2 hover:underline"
                           style={{ color: 'var(--color-secondary)' }}
                         >
                           <IconPhone size={16} />
-                          {empresa.contacto.telefono}
+                          {empresa.telefono}
                         </a>
                       </div>
                     </div>

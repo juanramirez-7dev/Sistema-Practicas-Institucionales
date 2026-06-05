@@ -33,7 +33,27 @@ namespace Practicas.API.Controllers
                     Estado = proceso.Estado
                 });
             }
-            catch( KeyNotFoundException ex)
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+
+        }
+
+        [HttpGet("{id}")]
+        [Authorize(Roles = "Oficina")]
+        public async Task<ActionResult<ProcesoResponseDto>> GetByEstudiante(Guid id)
+        {
+            try
+            {
+                var proceso = await _procesoService.GetByEstudianteIdAsync(id);
+                return Ok(new ProcesoResponseDto
+                {
+                    Id = proceso.Id,
+                    Estado = proceso.Estado
+                });
+            }
+            catch (KeyNotFoundException ex)
             {
                 return NotFound(new { Message = ex.Message });
             }

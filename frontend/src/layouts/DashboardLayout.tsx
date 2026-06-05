@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Outlet, NavLink } from 'react-router';
 import {
   IconLogout,
@@ -10,9 +11,11 @@ import {
   IconX,
   IconUsers,
   IconUserCheck,
+  IconBell,
 } from '@tabler/icons-react';
 
 import { useAuth } from '../hooks/useAuth';
+import { notificationService } from '../services/notificationService';
 
 interface SidebarItem {
   path: string;
@@ -25,6 +28,7 @@ const ESTUDIANTE_MENU: SidebarItem[] = [
   { path: '/estudiante/perfil', icon: IconUser, label: 'Perfil' },
   { path: '/estudiante/empresas', icon: IconBriefcase, label: 'Empresas Interesadas' },
   { path: '/estudiante/documentos', icon: IconFileText, label: 'Documentos' },
+  { path: '/estudiante/notificaciones', icon: IconBell, label: 'Notificaciones' },
 ];
 
 const EMPRESA_MENU: SidebarItem[] = [
@@ -51,13 +55,13 @@ export function DashboardLayout() {
 
   const getMenuItems = (): SidebarItem[] => {
     switch (user?.rol) {
-      case 'estudiante':
+      case 'Estudiante':
         return ESTUDIANTE_MENU;
-      case 'empresa':
+      case 'Empresa':
         return EMPRESA_MENU;
-      case 'asesor':
+      case 'Asesor':
         return ASESOR_MENU;
-      case 'oficina':
+      case 'Oficina':
         return OFICINA_MENU;
       default:
         return [];
@@ -65,12 +69,17 @@ export function DashboardLayout() {
   };
 
   const menuItems = getMenuItems();
+  const { data: notificacionesData } = useQuery({
+    queryKey: ['notificaciones'],
+    queryFn: notificationService.getNotificaciones,
+    enabled: user?.rol === 'Estudiante',
+  });
 
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: 'var(--color-gray-light)' }}>
+    <div className="h-screen overflow-hidden flex" style={{ backgroundColor: 'var(--color-gray-light)' }}>
       {/* Sidebar Desktop */}
       <aside
-        className="hidden md:flex md:flex-col md:w-64 lg:w-72"
+        className="hidden md:flex md:flex-col h-full md:w-64 lg:w-72"
         style={{ backgroundColor: 'var(--color-primary)' }}
       >
         {/* Logo y usuario */}
@@ -102,7 +111,7 @@ export function DashboardLayout() {
         </div>
 
         {/* Menú */}
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 min-h-0 p-4 space-y-2 overflow-y-auto">
           {menuItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -121,6 +130,14 @@ export function DashboardLayout() {
               >
                 <Icon size={20} />
                 <span className="font-medium">{item.label}</span>
+                {item.path === '/estudiante/notificaciones' && notificacionesData?.noLeidas ? (
+                  <span
+                    className="ml-auto inline-flex items-center justify-center rounded-full px-2 py-0.5 text-[11px] font-bold"
+                    style={{ backgroundColor: 'var(--color-danger)', color: 'white' }}
+                  >
+                    {notificacionesData.noLeidas}
+                  </span>
+                ) : null}
               </NavLink>
             );
           })}
@@ -182,7 +199,7 @@ export function DashboardLayout() {
             </div>
 
             {/* Menú */}
-            <nav className="flex-1 p-4 space-y-2">
+            <nav className="flex-1 min-h-0 p-4 space-y-2 overflow-y-auto">
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -190,7 +207,7 @@ export function DashboardLayout() {
                     key={item.path}
                     to={item.path}
                     className={({ isActive })=> {
-                      const baseClasses = "flex items-center gap-3 px-4 py-3 rounded-xl transition-all" 
+                      const baseClasses = "flex items-center gap-3 px-4 py-3 rounded-xl transition-all"
                       if (isActive) {
                         return baseClasses + " bg-secondary text-white";
                       } else {
@@ -200,6 +217,14 @@ export function DashboardLayout() {
                   >
                     <Icon size={20} />
                     <span className="font-medium">{item.label}</span>
+                    {item.path === '/estudiante/notificaciones' && notificacionesData?.noLeidas ? (
+                      <span
+                        className="ml-auto inline-flex items-center justify-center rounded-full px-2 py-0.5 text-[11px] font-bold"
+                        style={{ backgroundColor: 'var(--color-danger)', color: 'white' }}
+                      >
+                        {notificacionesData.noLeidas}
+                      </span>
+                    ) : null}
                   </NavLink>
                 );
               })}
@@ -220,7 +245,7 @@ export function DashboardLayout() {
       )}
 
       {/* Área de contenido principal */}
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex-1 flex flex-col min-h-0">
         {/* Header móvil */}
         <header
           className="md:hidden px-6 py-4 border-b flex items-center justify-between"
@@ -255,8 +280,8 @@ export function DashboardLayout() {
         </header>
 
         {/* Contenido */}
-        <main className="flex-1 p-6 md:p-8">
-          <Outlet/>
+        <main className="flex-1 overflow-auto p-6 md:p-8">
+          <Outlet />
         </main>
       </div>
     </div>

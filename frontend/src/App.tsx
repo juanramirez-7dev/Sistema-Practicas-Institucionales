@@ -10,9 +10,9 @@ import { ProcesoPage } from "./pages/estudiante/ProcesoPage";
 import { PerfilPage } from "./pages/estudiante/PerfilPage";
 import { EmpresasPage } from "./pages/estudiante/EmpresasPage";
 import { DocumentosPage } from "./pages/estudiante/DocumentosPage";
+import { NotificationPage } from "./pages/estudiante/NotificationPage";
 import { PerfilesPage } from "./pages/empresa/PerfilesPage";
 import { MiSeleccionPage } from "./pages/empresa/MiSeleccionPage";
-import { GestionPage } from "./pages/asesor/GestionPage";
 import { GestionEstudiantesPage } from "./pages/oficina/GestionEstudiantesPage";
 
 export default function App() {
@@ -22,18 +22,19 @@ export default function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
 
-        <Route element={<ProtectedRoute roles={["estudiante"]} />}>
+        <Route element={<ProtectedRoute roles={["Estudiante"]} />}>
           <Route path="/estudiante" element={<DashboardLayout />}>
             <Route index element={<Navigate to="proceso" replace />} />
             <Route path="proceso" element={<ProcesoPage />} />
             <Route path="perfil" element={<PerfilPage />} />
             <Route path="empresas" element={<EmpresasPage />} />
             <Route path="documentos" element={<DocumentosPage />} />
-            <Route path="*" element={<Navigate to="proceso" replace />} />
-          </Route>
+          <Route path="notificaciones" element={<NotificationPage />} />
+          <Route path="*" element={<Navigate to="proceso" replace />} />
         </Route>
+      </Route>
 
-        <Route element={<ProtectedRoute roles={["empresa"]} />}>
+        <Route element={<ProtectedRoute roles={["Empresa"]} />}>
           <Route path="/empresa" element={<DashboardLayout />}>
             <Route index element={<Navigate to="perfiles" replace />} />
             <Route path="perfiles" element={<PerfilesPage />} />
@@ -42,15 +43,7 @@ export default function App() {
           </Route>
         </Route>
 
-        <Route element={<ProtectedRoute roles={["asesor"]} />}>
-          <Route path="/asesor" element={<DashboardLayout />}>
-            <Route index element={<Navigate to="gestion" replace />} />
-            <Route path="gestion" element={<GestionPage />} />
-            <Route path="*" element={<Navigate to="gestion" replace />} />
-          </Route>
-        </Route>
-
-        <Route element={<ProtectedRoute roles={["oficina"]} />}>
+        <Route element={<ProtectedRoute roles={["Oficina"]} />}>
           <Route path="/oficina" element={<DashboardLayout />}>
             <Route index element={<Navigate to="gestion-estudiantes" replace />} />
             <Route path="gestion-estudiantes" element={<GestionEstudiantesPage />} />

@@ -18,20 +18,13 @@ export function LoginPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const validateEmail = (email: string): boolean => {
-    return email.toLowerCase().endsWith('@correo.itm.edu.co');
-  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     setIsLoading(true);
 
-    if (!validateEmail(email)) {
-      setErrorMessage('El correo debe ser institucional (@correo.itm.edu.co)');
-      setIsLoading(false);
-      return;
-    }
 
     try {
       await login({ login: email, password });
@@ -89,7 +82,7 @@ export function LoginPage() {
               <div className="relative">
                 <input
                   id="email"
-                  type="email"
+                  type="text"
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
